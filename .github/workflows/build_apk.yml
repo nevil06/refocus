@@ -33,12 +33,12 @@ jobs:
       - name: Run Tests
         run: flutter test
 
-      - name: Build Debug APK
-        run: flutter build apk --debug
+      - name: Build Release APK
+        run: flutter build apk --release
 
-      - name: Upload APK Artifact
+      - name: Upload Release APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: refocus-again-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: refocus-again-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
