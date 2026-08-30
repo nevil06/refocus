@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_dark">#0F172A</color>
+    <color name="bg_card">#1E293B</color>
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="accent_teal">#14B8A6</color>
+    <color name="accent_cyan">#06B6D4</color>
+    <color name="button_bg">#3B82F6</color>
+    <color name="button_text">#FFFFFF</color>
+</resources>
