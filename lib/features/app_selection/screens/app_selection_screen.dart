@@ -30,6 +30,11 @@ class _AppSelectionScreenState extends ConsumerState<AppSelectionScreen> {
       appBar: AppBar(
         title: const Text('Block Apps'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Rescan Apps',
+            onPressed: () => notifier.loadApps(),
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert_rounded),
             color: AppColors.surface,

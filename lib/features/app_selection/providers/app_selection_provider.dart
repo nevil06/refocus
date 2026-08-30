@@ -2,6 +2,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/installed_app.dart';
 import '../../../core/providers/core_providers.dart';
 
+// Fallback curated distracting apps list in case platform channel returns empty
+final List<InstalledApp> _fallbackCuratedApps = [
+  InstalledApp(appName: 'Instagram', packageName: 'com.instagram.android', iconBase64: ''),
+  InstalledApp(appName: 'YouTube', packageName: 'com.google.android.youtube', iconBase64: ''),
+  InstalledApp(appName: 'Snapchat', packageName: 'com.snapchat.android', iconBase64: ''),
+  InstalledApp(appName: 'Reddit', packageName: 'com.reddit.frontpage', iconBase64: ''),
+  InstalledApp(appName: 'Chrome', packageName: 'com.android.chrome', iconBase64: ''),
+  InstalledApp(appName: 'TikTok', packageName: 'com.zhiliaoapp.musically', iconBase64: ''),
+  InstalledApp(appName: 'Facebook', packageName: 'com.facebook.katana', iconBase64: ''),
+  InstalledApp(appName: 'X (Twitter)', packageName: 'com.twitter.android', iconBase64: ''),
+  InstalledApp(appName: 'Netflix', packageName: 'com.netflix.mediaclient', iconBase64: ''),
+  InstalledApp(appName: 'Discord', packageName: 'com.discord', iconBase64: ''),
+  InstalledApp(appName: 'WhatsApp', packageName: 'com.whatsapp', iconBase64: ''),
+  InstalledApp(appName: 'Telegram', packageName: 'org.telegram.messenger', iconBase64: ''),
+  InstalledApp(appName: 'Spotify', packageName: 'com.spotify.music', iconBase64: ''),
+  InstalledApp(appName: 'Prime Video', packageName: 'com.amazon.avod.thirdpartyclient', iconBase64: ''),
+  InstalledApp(appName: 'Pinterest', packageName: 'com.pinterest', iconBase64: ''),
+];
+
 class AppSelectionState {
   final List<InstalledApp> allApps;
   final List<InstalledApp> filteredApps;
@@ -54,7 +73,11 @@ class AppSelectionNotifier extends StateNotifier<AppSelectionState> {
   Future<void> loadApps() async {
     state = state.copyWith(isLoading: true);
     try {
-      final installedApps = await _nativeBridge.getInstalledApps();
+      List<InstalledApp> installedApps = await _nativeBridge.getInstalledApps();
+      if (installedApps.isEmpty) {
+        installedApps = List.from(_fallbackCuratedApps);
+      }
+
       final savedBlockedPackages = await _database.getSelectedBlockedPackageNames();
       final savedBlockedSet = Set<String>.from(savedBlockedPackages);
 
@@ -69,7 +92,20 @@ class AppSelectionNotifier extends StateNotifier<AppSelectionState> {
         isLoading: false,
       );
     } catch (_) {
-      state = state.copyWith(isLoading: false);
+      // If native bridge throws, use fallback list
+      final savedBlockedPackages = await _database.getSelectedBlockedPackageNames();
+      final savedBlockedSet = Set<String>.from(savedBlockedPackages);
+
+      final fallback = _fallbackCuratedApps.map((app) {
+        final isSelected = savedBlockedSet.contains(app.packageName);
+        return app.copyWith(isSelected: isSelected);
+      }).toList();
+
+      state = state.copyWith(
+        allApps: fallback,
+        filteredApps: _filter(fallback, state.searchQuery),
+        isLoading: false,
+      );
     }
   }
 
