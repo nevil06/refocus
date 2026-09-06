@@ -45,6 +45,15 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.1
+
+# Launcher icon generation (run: dart run flutter_launcher_icons)
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/branding/logo_bg.png"
+  adaptive_icon_background: "#0B0B0F"
+  adaptive_icon_foreground: "assets/branding/logo.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -56,6 +65,13 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # In-app branding assets. The primary brand mark is drawn as a vector widget
+  # (lib/app/app_logo.dart) so it needs no binary file, but any raster art
+  # (e.g. a store logo / launcher source PNG) can be dropped into this folder.
+  assets:
+    - assets/branding/
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -16,7 +16,19 @@ class _AppSelectionScreenState extends ConsumerState<AppSelectionScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    // Rebuild so the suffix clear-button appears/disappears as the user types.
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  void _onSearchChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
@@ -67,7 +79,7 @@ class _AppSelectionScreenState extends ConsumerState<AppSelectionScreen> {
               onChanged: notifier.search,
               decoration: InputDecoration(
                 hintText: 'Search installed applications...',
-                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+                prefixIcon: Icon(Icons.search_rounded, color: AppColors.textSecondary),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear_rounded, size: 20),
@@ -82,7 +94,7 @@ class _AppSelectionScreenState extends ConsumerState<AppSelectionScreen> {
           ),
           Expanded(
             child: state.isLoading
-                ? const Center(
+                ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -98,7 +110,7 @@ class _AppSelectionScreenState extends ConsumerState<AppSelectionScreen> {
                           state.searchQuery.isEmpty
                               ? 'No launchable applications found.'
                               : 'No apps matching "${state.searchQuery}"',
-                          style: const TextStyle(color: AppColors.textSecondary),
+                          style: TextStyle(color: AppColors.textSecondary),
                         ),
                       )
                     : ListView.builder(
@@ -116,7 +128,7 @@ class _AppSelectionScreenState extends ConsumerState<AppSelectionScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.surface,
-              border: const Border(top: BorderSide(color: AppColors.border)),
+              border: Border(top: BorderSide(color: AppColors.border)),
             ),
             child: SafeArea(
               top: false,

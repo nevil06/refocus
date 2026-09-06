@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget colors (dark). Mirrors AppColors dark mode in the Flutter app. -->
+    <color name="widget_bg">#141414</color>
+    <color name="widget_border">#242424</color>
+    <color name="widget_text">#F5F5F5</color>
+    <color name="widget_text_muted">#9A9A9A</color>
+</resources>

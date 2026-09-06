@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    We subscribe to window-state, window and (throttled) content changes so we can
+    detect a blocked app coming to the foreground even when it was already running
+    in the background (Recents / task switch), which does not always emit a fresh
+    window-state event.
+
+    canRetrieveWindowContent is true ONLY so we can read the *package name* of the
+    active window (via getRootInActiveWindow().packageName). We never read text,
+    fields, passwords, or any screen content. See resolveForegroundPackage().
+    notificationTimeout throttles content events to protect battery.
+-->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowContentChanged"
+    android:accessibilityEventTypes="typeWindowStateChanged|typeWindowsChanged|typeWindowContentChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagDefault|flagIncludeNotImportantViews"
-    android:canRetrieveWindowContent="false"
+    android:accessibilityFlags="flagDefault|flagRetrieveInteractiveWindows"
+    android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_service_description"
-    android:notificationTimeout="100"
+    android:notificationTimeout="300"
     android:summary="@string/accessibility_service_summary" />

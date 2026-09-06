@@ -4,13 +4,23 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Build
+import android.util.Base64
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 
 object InstalledAppsProvider {
     private const val TAG = "InstalledAppsProvider"
+
+    // Target size (px) for encoded launcher icons. Kept small to limit
+    // MethodChannel payload size while staying crisp on the 42dp list tile.
+    private const val ICON_SIZE_PX = 96
 
     // Top distracting apps catalog
     private val POPULAR_APPS = listOf(
@@ -76,11 +86,17 @@ object InstalledAppsProvider {
                     pkg
                 }
 
+                val iconBase64 = try {
+                    encodeIcon(resolveInfo.loadIcon(pm))
+                } catch (_: Exception) {
+                    ""
+                }
+
                 appList.add(
                     mapOf(
                         "appName" to name,
                         "packageName" to pkg,
-                        "iconBase64" to ""
+                        "iconBase64" to iconBase64
                     )
                 )
             }
@@ -113,11 +129,17 @@ object InstalledAppsProvider {
                         pkg
                     }
 
+                    val iconBase64 = try {
+                        encodeIcon(pm.getApplicationIcon(appInfo))
+                    } catch (_: Exception) {
+                        ""
+                    }
+
                     appList.add(
                         mapOf(
                             "appName" to name,
                             "packageName" to pkg,
-                            "iconBase64" to ""
+                            "iconBase64" to iconBase64
                         )
                     )
                 }
@@ -126,15 +148,23 @@ object InstalledAppsProvider {
             Log.e(TAG, "Error in getInstalledApplications: ${e.message}")
         }
 
-        // 3. Fallback: Always ensure top popular distracting apps are in the list
+        // 3. Fallback: Always ensure top popular distracting apps are in the list.
+        //    If the package is actually installed we still try to grab its real icon.
         for ((name, pkg) in POPULAR_APPS) {
             if (!seenPackages.contains(pkg)) {
                 seenPackages.add(pkg)
+
+                val iconBase64 = try {
+                    encodeIcon(pm.getApplicationIcon(pkg))
+                } catch (_: Exception) {
+                    ""
+                }
+
                 appList.add(
                     mapOf(
                         "appName" to name,
                         "packageName" to pkg,
-                        "iconBase64" to ""
+                        "iconBase64" to iconBase64
                     )
                 )
             }
@@ -142,5 +172,49 @@ object InstalledAppsProvider {
 
         appList.sortBy { it["appName"]?.lowercase() ?: "" }
         appList
+    }
+
+    /**
+     * Renders any [Drawable] (including adaptive icons) into a fixed-size PNG and
+     * returns it as a base64 string suitable for transport over the MethodChannel.
+     * Returns an empty string on failure so the Flutter side can fall back gracefully.
+     */
+    private fun encodeIcon(drawable: Drawable?): String {
+        if (drawable == null) return ""
+
+        val bitmap = drawableToBitmap(drawable) ?: return ""
+        return try {
+            val scaled = if (bitmap.width != ICON_SIZE_PX || bitmap.height != ICON_SIZE_PX) {
+                Bitmap.createScaledBitmap(bitmap, ICON_SIZE_PX, ICON_SIZE_PX, true)
+            } else {
+                bitmap
+            }
+            val stream = ByteArrayOutputStream()
+            scaled.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            val bytes = stream.toByteArray()
+            Base64.encodeToString(bytes, Base64.NO_WRAP)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to encode icon: ${e.message}")
+            ""
+        }
+    }
+
+    private fun drawableToBitmap(drawable: Drawable): Bitmap? {
+        if (drawable is BitmapDrawable && drawable.bitmap != null) {
+            return drawable.bitmap
+        }
+
+        return try {
+            val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else ICON_SIZE_PX
+            val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else ICON_SIZE_PX
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+            drawable.setBounds(0, 0, canvas.width, canvas.height)
+            drawable.draw(canvas)
+            bitmap
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to rasterize drawable: ${e.message}")
+            null
+        }
     }
 }

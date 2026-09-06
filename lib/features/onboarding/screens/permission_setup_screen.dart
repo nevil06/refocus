@@ -95,7 +95,7 @@ class _PermissionSetupScreenState extends ConsumerState<PermissionSetupScreen>
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.info_outline_rounded,
+                        Icon(Icons.info_outline_rounded,
                             color: AppColors.cyan, size: 20),
                         const SizedBox(width: 12),
                         Expanded(
@@ -131,7 +131,7 @@ class _PermissionSetupScreenState extends ConsumerState<PermissionSetupScreen>
               ),
             );
           },
-          loading: () => const Center(
+          loading: () => Center(
             child: CircularProgressIndicator(color: AppColors.primary),
           ),
           error: (err, _) => Center(
@@ -210,7 +210,7 @@ class _PermissionCard extends StatelessWidget {
               if (isGranted)
                 Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.primary,
                     shape: BoxShape.circle,
                   ),

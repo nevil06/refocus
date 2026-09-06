@@ -23,7 +23,7 @@ class HistoryScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.history_toggle_off_rounded,
+                  Icon(Icons.history_toggle_off_rounded,
                       size: 48, color: AppColors.textMuted),
                   const SizedBox(height: 16),
                   Text(
@@ -45,7 +45,8 @@ class HistoryScreen extends ConsumerWidget {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12.0),
+            padding: EdgeInsets.fromLTRB(
+                18, 12, 18, 24 + MediaQuery.viewPaddingOf(context).bottom),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -63,7 +64,7 @@ class HistoryScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'TOTAL FOCUS TIME',
                               style: TextStyle(
                                 color: AppColors.cyan,
@@ -75,7 +76,7 @@ class HistoryScreen extends ConsumerWidget {
                             const SizedBox(height: 6),
                             Text(
                               TimeUtils.formatDurationMinutes(data.totalCompletedMinutes),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -90,7 +91,7 @@ class HistoryScreen extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'COMPLETED SESSIONS',
                               style: TextStyle(
                                 color: AppColors.cyan,
@@ -102,7 +103,7 @@ class HistoryScreen extends ConsumerWidget {
                             const SizedBox(height: 6),
                             Text(
                               '${data.totalCompletedSessions}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textPrimary,
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
@@ -125,7 +126,7 @@ class HistoryScreen extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                         child: Text(
                           entry.key.toUpperCase(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -142,7 +143,7 @@ class HistoryScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(
+        loading: () => Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
         error: (err, _) => Center(
@@ -202,7 +203,7 @@ class _HistorySessionTile extends StatelessWidget {
                     ),
                     if (session.isStrictMode) ...[
                       const SizedBox(width: 6),
-                      const Icon(Icons.lock_rounded, size: 12, color: AppColors.amber),
+                      Icon(Icons.lock_rounded, size: 12, color: AppColors.amber),
                     ],
                   ],
                 ),

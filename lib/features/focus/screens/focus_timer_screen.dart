@@ -55,10 +55,21 @@ class FocusTimerScreen extends ConsumerWidget {
         _promptStopSession(context, activeSession.isStrictMode, focusNotifier);
       },
       child: Scaffold(
+        // The screen itself has no text input; the strict-stop dialog manages its
+        // own keyboard inset. Not resizing here prevents the timer layout (with
+        // its Spacers) from overflowing when the dialog's keyboard opens.
+        resizeToAvoidBottomInset: false,
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-            child: Column(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+                      child: Column(
               children: [
                 // Top Header: App Branding + Session Label
                 Row(
@@ -80,7 +91,7 @@ class FocusTimerScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: AppColors.amber.withOpacity(0.4)),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.lock_rounded, size: 12, color: AppColors.amber),
@@ -115,7 +126,7 @@ class FocusTimerScreen extends ConsumerWidget {
                     Container(
                       width: 8,
                       height: 8,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.primary,
                         shape: BoxShape.circle,
                       ),
@@ -143,7 +154,7 @@ class FocusTimerScreen extends ConsumerWidget {
                         value: timerState.progress,
                         strokeWidth: 8,
                         backgroundColor: AppColors.surfaceElevated,
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                         strokeCap: StrokeCap.round,
                       ),
                     ),
@@ -152,7 +163,7 @@ class FocusTimerScreen extends ConsumerWidget {
                       children: [
                         Text(
                           TimeUtils.formatRemainingSeconds(timerState.remainingSeconds),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 48,
                             fontWeight: FontWeight.bold,
@@ -163,7 +174,7 @@ class FocusTimerScreen extends ConsumerWidget {
                         const SizedBox(height: 6),
                         Text(
                           '${activeSession.durationSeconds ~/ 60}m planned',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textMuted,
                             fontSize: 13,
                           ),
@@ -185,7 +196,7 @@ class FocusTimerScreen extends ConsumerWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.shield_rounded, color: AppColors.cyan, size: 22),
+                      Icon(Icons.shield_rounded, color: AppColors.cyan, size: 22),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Text(
@@ -218,7 +229,12 @@ class FocusTimerScreen extends ConsumerWidget {
                   ),
                 ),
               ],
-            ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),

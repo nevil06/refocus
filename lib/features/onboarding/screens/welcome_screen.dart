@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
+import '../../../app/app_logo.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -15,18 +16,7 @@ class WelcomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Spacer(flex: 1),
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-                ),
-                child: const Center(
-                  child: Text('🎯', style: TextStyle(fontSize: 30)),
-                ),
-              ),
+              const AppLogo(size: 72),
               const SizedBox(height: 32),
               Text(
                 'REFOCUS\nAGAIN',
@@ -53,7 +43,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.shield_outlined, color: AppColors.primary, size: 24),
+                    Icon(Icons.shield_outlined, color: AppColors.primary, size: 24),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(

@@ -75,7 +75,7 @@ class AppListTile extends StatelessWidget {
       width: 42,
       height: 42,
       color: AppColors.surfaceHover,
-      child: const Icon(Icons.android_rounded, color: AppColors.textSecondary, size: 24),
+      child: Icon(Icons.android_rounded, color: AppColors.textSecondary, size: 24),
     );
   }
 }

@@ -83,6 +83,15 @@ object SessionStateManager {
         return getPrefs(context).getLong(KEY_END_TIME, 0L)
     }
 
+    fun isStrict(context: Context): Boolean {
+        return getPrefs(context).getBoolean(KEY_IS_STRICT, false)
+    }
+
+    fun getLabel(context: Context): String? {
+        val label = getPrefs(context).getString(KEY_SESSION_LABEL, "") ?: ""
+        return label.ifBlank { null }
+    }
+
     fun getBlockedPackages(context: Context): Set<String> {
         val prefs = getPrefs(context)
         val jsonString = prefs.getString(KEY_BLOCKED_PACKAGES, "[]") ?: "[]"

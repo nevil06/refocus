@@ -19,12 +19,12 @@ class SessionCompleteScreen extends StatelessWidget {
                 width: 90,
                 height: 90,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.15),
+                  color: AppColors.primary.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primary.withOpacity(0.4), width: 2),
+                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.4), width: 2),
                 ),
-                child: const Center(
-                  child: Text('🎉', style: TextStyle(fontSize: 44)),
+                child: Center(
+                  child: Icon(Icons.check_rounded, color: AppColors.primary, size: 48),
                 ),
               ),
               const SizedBox(height: 32),

@@ -17,7 +17,8 @@ class SettingsScreen extends ConsumerWidget {
         title: const Text('Settings'),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12.0),
+        padding: EdgeInsets.fromLTRB(
+            18, 12, 18, 24 + MediaQuery.viewPaddingOf(context).bottom),
         children: [
           // Section 1: Android System Permissions
           Text(
@@ -44,7 +45,7 @@ class SettingsScreen extends ConsumerWidget {
                     subtitle: Text(
                       permissions.isAccessibilityGranted
                           ? 'Active & ready to block apps'
-                          : 'Disabled — required for app blocking',
+                          : 'Disabled. Required for app blocking',
                       style: TextStyle(
                         color: permissions.isAccessibilityGranted
                             ? AppColors.primary
@@ -60,8 +61,8 @@ class SettingsScreen extends ConsumerWidget {
                     title: const Text('Battery Optimization Exemption'),
                     subtitle: Text(
                       permissions.isBatteryOptimizationIgnored
-                          ? 'Exempted — background protection active'
-                          : 'Not exempted — Android may stop background service',
+                          ? 'Exempted. Background protection active'
+                          : 'Not exempted. Android may stop the background service',
                       style: TextStyle(
                         color: permissions.isBatteryOptimizationIgnored
                             ? AppColors.primary
@@ -75,7 +76,7 @@ class SettingsScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            loading: () => const Center(
+            loading: () => Center(
               child: Padding(
                 padding: EdgeInsets.all(24.0),
                 child: CircularProgressIndicator(color: AppColors.primary),
@@ -104,14 +105,28 @@ class SettingsScreen extends ConsumerWidget {
               border: Border.all(color: AppColors.border),
             ),
             child: ListTile(
-              leading: const Icon(Icons.apps_rounded, color: AppColors.primary),
+              leading: Icon(Icons.apps_rounded, color: AppColors.primary),
               title: const Text('Manage Blocked Apps'),
-              subtitle: const Text(
-                'Customize apps that get locked during sessions',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              subtitle: Consumer(
+                builder: (context, ref, _) {
+                  final countAsync = ref.watch(blockedAppsCountProvider);
+                  final label = countAsync.maybeWhen(
+                    data: (n) => n == 0
+                        ? 'No apps selected yet. Tap to choose apps to lock'
+                        : '$n ${n == 1 ? 'app' : 'apps'} will be locked during sessions',
+                    orElse: () => 'Customize apps that get locked during sessions',
+                  );
+                  return Text(
+                    label,
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  );
+                },
               ),
               trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
-              onTap: () => context.push('/apps'),
+              onTap: () async {
+                await context.push('/apps');
+                ref.invalidate(blockedAppsCountProvider);
+              },
             ),
           ),
 
@@ -140,7 +155,7 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 20),
+                    Icon(Icons.lock_outline_rounded, color: AppColors.primary, size: 20),
                     const SizedBox(width: 10),
                     Text(
                       '100% Local & Privacy-Preserving',

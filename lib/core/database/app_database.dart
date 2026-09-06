@@ -197,6 +197,36 @@ class AppDatabase {
     );
   }
 
+  /// Persists many selection changes atomically.
+  ///
+  /// Used by Select All / Deselect All so the whole change either lands or does
+  /// not, instead of issuing dozens of independent writes that can interleave
+  /// with reads and leave the stored selection inconsistent.
+  Future<void> setAppsBlockedBatch(
+    List<({String packageName, String appName, bool isSelected})> entries,
+  ) async {
+    if (entries.isEmpty) return;
+    final db = await database;
+    final now = DateTime.now().millisecondsSinceEpoch;
+
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+      for (final e in entries) {
+        batch.insert(
+          'blocked_apps',
+          {
+            'package_name': e.packageName,
+            'app_name': e.appName,
+            'is_selected': e.isSelected ? 1 : 0,
+            'added_at': now,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+  }
+
   Future<void> removeBlockedApp(String packageName) async {
     final db = await database;
     await db.delete(

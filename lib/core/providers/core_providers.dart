@@ -25,3 +25,23 @@ final permissionStatusProvider = FutureProvider.autoDispose<PermissionStatusStat
   final service = ref.watch(permissionServiceProvider);
   return await service.checkAllPermissions();
 });
+
+/// Canonical, persisted list of blocked package names.
+///
+/// This is the single source of truth for "which apps did the user choose".
+/// Every screen that needs the selection (session setup, quick start, settings
+/// count, home stats) must read this instead of any in-memory copy, so the list
+/// can never drift from what is stored in SQLite. Invalidate it after any change
+/// to the selection.
+final selectedBlockedPackagesProvider =
+    FutureProvider.autoDispose<List<String>>((ref) async {
+  final database = ref.watch(databaseProvider);
+  return await database.getSelectedBlockedPackageNames();
+});
+
+/// Live count of currently selected (blocked) apps, derived from the canonical
+/// persisted list above.
+final blockedAppsCountProvider = FutureProvider.autoDispose<int>((ref) async {
+  final packages = await ref.watch(selectedBlockedPackagesProvider.future);
+  return packages.length;
+});

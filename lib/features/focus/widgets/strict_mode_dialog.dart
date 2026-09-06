@@ -63,7 +63,7 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
       return AlertDialog(
         backgroundColor: AppColors.surface,
         title: const Text('Stop Focus Session?'),
-        content: const Text(
+        content: Text(
           'Your session will be marked as interrupted and blocked apps will be unlocked.',
           style: TextStyle(color: AppColors.textSecondary),
         ),
@@ -89,23 +89,25 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
 
     return AlertDialog(
       backgroundColor: AppColors.surface,
+      scrollable: true,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: AppColors.amber, size: 28),
+          Icon(Icons.warning_amber_rounded, color: AppColors.amber, size: 26),
           const SizedBox(width: 10),
-          const Text('Strict Mode Active'),
+          const Flexible(child: Text('Strict Mode Active')),
         ],
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'You enabled Strict Mode to protect your focus. Stopping will mark this session interrupted.',
             style: TextStyle(color: AppColors.textSecondary, height: 1.4),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Type "STOP" below to confirm:',
             style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
           ),
@@ -113,6 +115,7 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
           TextField(
             controller: _confirmController,
             autofocus: true,
+            textCapitalization: TextCapitalization.characters,
             onChanged: (_) => setState(() {}),
             decoration: const InputDecoration(
               hintText: 'Type STOP',
@@ -122,7 +125,7 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
             const SizedBox(height: 12),
             Text(
               'Please wait $_countdown seconds to reconsider...',
-              style: const TextStyle(color: AppColors.amber, fontSize: 12),
+              style: TextStyle(color: AppColors.amber, fontSize: 12),
             ),
           ],
         ],
@@ -141,7 +144,7 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
               : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.red,
-            disabledBackgroundColor: AppColors.red.withOpacity(0.3),
+            disabledBackgroundColor: AppColors.red.withValues(alpha: 0.3),
           ),
           child: const Text('Give Up & Stop'),
         ),

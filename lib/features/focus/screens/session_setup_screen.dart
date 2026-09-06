@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
+import '../../../core/providers/core_providers.dart';
 import '../../app_selection/providers/app_selection_provider.dart';
 import '../providers/focus_session_provider.dart';
 import '../widgets/duration_picker.dart';
@@ -27,6 +28,16 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final appSelectionState = ref.watch(appSelectionProvider);
+    // Read the PERSISTED selection so what we start a session with always matches
+    // what is stored, even if the in-memory list is stale.
+    final persistedSelection =
+        ref.watch(selectedBlockedPackagesProvider).maybeWhen(
+              data: (list) => list,
+              orElse: () => const <String>[],
+            );
+    final selectedCount = persistedSelection.isNotEmpty
+        ? persistedSelection.length
+        : appSelectionState.selectedCount;
     final focusNotifier = ref.read(focusSessionProvider.notifier);
 
     return Scaffold(
@@ -51,7 +62,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
               const SizedBox(height: 10),
               TextField(
                 controller: _labelController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: 'e.g. Physics, Calculus, Deep Reading',
                   prefixIcon: Icon(Icons.menu_book_rounded, color: AppColors.textSecondary),
                 ),
@@ -95,7 +106,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                           color: AppColors.primary.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.block_rounded, color: AppColors.primary, size: 24),
+                        child: Icon(Icons.block_rounded, color: AppColors.primary, size: 24),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -103,7 +114,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${appSelectionState.selectedCount} apps selected',
+                              '$selectedCount apps selected',
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     color: AppColors.textPrimary,
                                     fontWeight: FontWeight.w600,
@@ -111,7 +122,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              appSelectionState.selectedCount == 0
+                              selectedCount == 0
                                   ? 'Tap to select distracting apps'
                                   : 'Tap to customize blocked list',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -121,7 +132,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                      Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
                     ],
                   ),
                 ),
@@ -190,9 +201,40 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () async {
-                    if (appSelectionState.selectedCount == 0) {
+                    // Hard guard: refuse to start a session that cannot enforce
+                    // blocking because accessibility access is missing.
+                    final bridge = ref.read(nativeBridgeProvider);
+                    final hasAccessibility = await bridge.isAccessibilityEnabled();
+                    if (!hasAccessibility) {
+                      ref.invalidate(permissionStatusProvider);
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
+                          content: const Text(
+                              'Enable Accessibility access first, otherwise apps cannot be blocked.'),
+                          backgroundColor: AppColors.red,
+                          action: SnackBarAction(
+                            label: 'Enable',
+                            textColor: Colors.white,
+                            onPressed: () => ref
+                                .read(permissionServiceProvider)
+                                .requestAccessibility(),
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    // Read the persisted selection fresh from storage so the
+                    // session always blocks exactly what the user saved.
+                    final database = ref.read(databaseProvider);
+                    final blockedPackages =
+                        await database.getSelectedBlockedPackageNames();
+
+                    if (blockedPackages.isEmpty) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
                           content: Text('Please select at least 1 app to block before starting.'),
                           backgroundColor: AppColors.amber,
                         ),
@@ -203,7 +245,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
 
                     final success = await focusNotifier.startFocusSession(
                       durationMinutes: _selectedMinutes,
-                      blockedPackages: appSelectionState.selectedPackageNames,
+                      blockedPackages: blockedPackages,
                       isStrictMode: _isStrictMode,
                       label: _labelController.text.trim().isEmpty
                           ? null

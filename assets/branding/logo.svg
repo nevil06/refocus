@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Refocus Again logo">
+  <title>Refocus Again</title>
+  <desc>A focus aperture mark: a rounded badge with converging arcs around a center core.</desc>
+
+  <defs>
+    <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#20202B"/>
+      <stop offset="1" stop-color="#141420"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8B7BFF"/>
+      <stop offset="1" stop-color="#6D5DF6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded badge -->
+  <rect x="24" y="24" width="464" height="464" rx="120" ry="120" fill="url(#badge)"/>
+  <rect x="24" y="24" width="464" height="464" rx="120" ry="120"
+        fill="none" stroke="#6D5DF6" stroke-opacity="0.25" stroke-width="4"/>
+
+  <!-- Outer focus ring -->
+  <circle cx="256" cy="256" r="132" fill="none" stroke="url(#ring)" stroke-width="26"/>
+
+  <!-- Two converging aperture arcs (aqua accent) forming a lens/eye -->
+  <path d="M 256 158 A 98 98 0 0 1 354 256"
+        fill="none" stroke="#3FE0C5" stroke-width="22" stroke-linecap="round"/>
+  <path d="M 256 354 A 98 98 0 0 1 158 256"
+        fill="none" stroke="#3FE0C5" stroke-width="22" stroke-linecap="round"/>
+
+  <!-- Center core -->
+  <circle cx="256" cy="256" r="40" fill="url(#ring)"/>
+  <circle cx="256" cy="256" r="18" fill="#0B0B0F"/>
+</svg>

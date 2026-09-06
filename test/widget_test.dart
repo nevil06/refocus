@@ -58,4 +58,80 @@ void main() {
       expect(toggled.packageName, 'com.instagram.android');
     });
   });
+
+  group('Session consistency rules', () {
+    FocusSessionModel makeSession(SessionStatus status, {int minutesAgo = 60}) {
+      final start = DateTime.now().subtract(Duration(minutes: minutesAgo));
+      return FocusSessionModel(
+        id: 'id-${status.name}-$minutesAgo',
+        startTime: start,
+        plannedEndTime: start.add(const Duration(minutes: 25)),
+        durationSeconds: 1500,
+        status: status,
+        isStrictMode: false,
+        createdAt: start,
+        blockedApps: const ['com.instagram.android'],
+      );
+    }
+
+    test('active sessions are excluded from history and recent lists', () {
+      final sessions = [
+        makeSession(SessionStatus.active, minutesAgo: 5),
+        makeSession(SessionStatus.completed, minutesAgo: 120),
+        makeSession(SessionStatus.interrupted, minutesAgo: 200),
+      ];
+
+      // Mirrors the filter used by historyProvider and homeStatsProvider.
+      final visible =
+          sessions.where((s) => s.status != SessionStatus.active).toList();
+
+      expect(visible.length, 2);
+      expect(visible.any((s) => s.status == SessionStatus.active), isFalse);
+    });
+
+    test('only completed sessions count toward total focus minutes', () {
+      final sessions = [
+        makeSession(SessionStatus.completed, minutesAgo: 120),
+        makeSession(SessionStatus.completed, minutesAgo: 300),
+        makeSession(SessionStatus.interrupted, minutesAgo: 200),
+        makeSession(SessionStatus.cancelled, minutesAgo: 400),
+        makeSession(SessionStatus.active, minutesAgo: 2),
+      ];
+
+      var totalSeconds = 0;
+      for (final s in sessions) {
+        if (s.status == SessionStatus.completed) {
+          totalSeconds += s.durationSeconds;
+        }
+      }
+
+      // Two completed sessions of 1500s each.
+      expect(totalSeconds ~/ 60, 50);
+    });
+
+    test('status strings round-trip through fromString', () {
+      for (final status in SessionStatus.values) {
+        expect(SessionStatus.fromString(status.name), status);
+      }
+    });
+
+    test('remaining time never goes negative once expired', () {
+      final start = DateTime.now().subtract(const Duration(hours: 2));
+      final expired = FocusSessionModel(
+        id: 'expired',
+        startTime: start,
+        plannedEndTime: start.add(const Duration(minutes: 25)),
+        durationSeconds: 1500,
+        status: SessionStatus.active,
+        isStrictMode: false,
+        createdAt: start,
+        blockedApps: const [],
+      );
+
+      expect(expired.isExpired, isTrue);
+      expect(expired.remainingSeconds, 0);
+      expect(expired.progressFraction, 1.0);
+      expect(expired.elapsedSeconds, expired.durationSeconds);
+    });
+  });
 }

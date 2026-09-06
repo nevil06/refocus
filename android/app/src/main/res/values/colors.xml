@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="bg_dark">#0F172A</color>
-    <color name="bg_card">#1E293B</color>
-    <color name="text_primary">#F8FAFC</color>
-    <color name="text_secondary">#94A3B8</color>
-    <color name="accent_teal">#14B8A6</color>
-    <color name="accent_cyan">#06B6D4</color>
-    <color name="button_bg">#3B82F6</color>
+    <color name="bg_dark">#0B0B0F</color>
+    <color name="bg_card">#17171F</color>
+    <color name="text_primary">#F5F5FA</color>
+    <color name="text_secondary">#A1A3B3</color>
+    <color name="accent_teal">#6D5DF6</color>
+    <color name="accent_cyan">#3FE0C5</color>
+    <color name="button_bg">#6D5DF6</color>
     <color name="button_text">#FFFFFF</color>
+    <color name="ic_launcher_background">#0B0B0F</color>
+
+    <!-- Widget colors (light). A values-night variant provides the dark set so
+         the home-screen widget follows the system theme like the app. -->
+    <color name="widget_bg">#FFFFFF</color>
+    <color name="widget_border">#E4E4E4</color>
+    <color name="widget_text">#121212</color>
+    <color name="widget_text_muted">#5C5C5C</color>
 </resources>
