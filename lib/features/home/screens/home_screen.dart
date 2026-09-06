@@ -5,6 +5,7 @@ import '../../../app/theme.dart';
 import '../../../core/models/focus_session.dart';
 import '../../../core/utils/time_utils.dart';
 import '../../focus/providers/focus_session_provider.dart';
+import '../../wellbeing/providers/wellbeing_provider.dart';
 import '../providers/home_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -20,6 +21,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(homeStatsProvider);
+    final wellbeingAsync = ref.watch(wellbeingSummaryProvider);
     final focusSessionState = ref.watch(focusSessionProvider);
     final isSessionActive = focusSessionState.isSessionActive;
 
@@ -30,45 +32,94 @@ class HomeScreen extends ConsumerWidget {
             return RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(homeStatsProvider);
+                ref.invalidate(wellbeingSummaryProvider);
               },
               color: AppColors.primary,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Top App Header
+                    // Top App Header with GOAT Logo
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
-                            Text(
-                              _getGreeting(),
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.textSecondary,
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: AppColors.primary.withOpacity(0.4),
+                                    width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primary.withOpacity(0.15),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
                                   ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/images/logo.png',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Center(
+                                    child: Text('🎯',
+                                        style: TextStyle(fontSize: 22)),
+                                  ),
+                                ),
+                              ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Ready to refocus?',
-                              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                    color: AppColors.textPrimary,
-                                  ),
+                            const SizedBox(width: 14),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _getGreeting(),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Refocus Again',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineLarge
+                                      ?.copyWith(
+                                        color: AppColors.textPrimary,
+                                      ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                         Row(
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.history_rounded, color: AppColors.textSecondary),
+                              icon: const Icon(Icons.insights_rounded,
+                                  color: AppColors.cyan),
+                              onPressed: () => context.push('/wellbeing'),
+                              tooltip: 'Digital Wellbeing',
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.history_rounded,
+                                  color: AppColors.textSecondary),
                               onPressed: () => context.push('/history'),
                               tooltip: 'History',
                             ),
                             IconButton(
-                              icon: const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
+                              icon: const Icon(Icons.settings_outlined,
+                                  color: AppColors.textSecondary),
                               onPressed: () => context.push('/settings'),
                               tooltip: 'Settings',
                             ),
@@ -85,14 +136,15 @@ class HomeScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              AppColors.primary.withOpacity(0.2),
-                              AppColors.cyan.withOpacity(0.1),
+                              AppColors.primary.withOpacity(0.18),
+                              AppColors.cyan.withOpacity(0.08),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: AppColors.primary.withOpacity(0.4)),
+                          border: Border.all(
+                              color: AppColors.primary.withOpacity(0.4)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,10 +173,14 @@ class HomeScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              focusSessionState.activeSession?.label?.isNotEmpty == true
+                              focusSessionState.activeSession?.label?.isNotEmpty ==
+                                      true
                                   ? focusSessionState.activeSession!.label!
                                   : 'Deep Focus Session',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
                                     color: AppColors.textPrimary,
                                   ),
                             ),
@@ -146,6 +202,13 @@ class HomeScreen extends ConsumerWidget {
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: AppColors.border),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,46 +272,41 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       ),
 
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 26),
 
-                    // Quick Stats Section Header
-                    Text(
-                      'OVERVIEW',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.cyan,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                          ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Stats 3-Card Grid
+                    // Quick Stats 3-Card Grid
                     Row(
                       children: [
                         Expanded(
-                          child: _StatCard(
-                            title: "Today's Focus",
-                            value: TimeUtils.formatDurationMinutes(stats.todayFocusMinutes),
-                            icon: Icons.access_time_rounded,
-                            iconColor: AppColors.primary,
+                          child: InkWell(
+                            onTap: () => context.push('/wellbeing'),
+                            borderRadius: BorderRadius.circular(16),
+                            child: _StatCard(
+                              title: "Today's Focus",
+                              value: TimeUtils.formatDurationMinutes(
+                                  stats.todayFocusMinutes),
+                              icon: Icons.access_time_rounded,
+                              iconColor: AppColors.primary,
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: _StatCard(
                             title: 'Streak',
-                            value: '${stats.currentStreakDays} ${stats.currentStreakDays == 1 ? "day" : "days"}',
+                            value:
+                                '${stats.currentStreakDays} ${stats.currentStreakDays == 1 ? "day" : "days"}',
                             icon: Icons.local_fire_department_rounded,
                             iconColor: AppColors.amber,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         Expanded(
                           child: InkWell(
                             onTap: () => context.push('/apps'),
                             borderRadius: BorderRadius.circular(16),
                             child: _StatCard(
-                              title: 'Blocked Apps',
+                              title: 'Shielded Apps',
                               value: '${stats.blockedAppsCount}',
                               icon: Icons.shield_rounded,
                               iconColor: AppColors.cyan,
@@ -258,7 +316,148 @@ class HomeScreen extends ConsumerWidget {
                       ],
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
+
+                    // Digital Wellbeing & Analytics Preview Card
+                    wellbeingAsync.maybeWhen(
+                      data: (wb) => InkWell(
+                        onTap: () => context.push('/wellbeing'),
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: AppColors.border),
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.surfaceElevated.withOpacity(0.8),
+                                AppColors.surface,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.cyan.withOpacity(0.12),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: const Icon(
+                                          Icons.donut_large_rounded,
+                                          color: AppColors.cyan,
+                                          size: 18,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      const Text(
+                                        'DIGITAL WELLBEING',
+                                        style: TextStyle(
+                                          color: AppColors.cyan,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          letterSpacing: 0.8,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Row(
+                                    children: [
+                                      Text(
+                                        'View Graph',
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      SizedBox(width: 4),
+                                      Icon(Icons.arrow_forward_ios_rounded,
+                                          size: 11, color: AppColors.primary),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        TimeUtils.formatDurationMinutes(
+                                            wb.todayMinutes),
+                                        style: const TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Daily Goal: ${wb.dailyGoalMinutes}m (${(wb.goalProgress * 100).toInt()}%)',
+                                        style: const TextStyle(
+                                          color: AppColors.textSecondary,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  // Mini 7-day sparkline/bar preview
+                                  SizedBox(
+                                    height: 32,
+                                    width: 120,
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: wb.last7Days.map((d) {
+                                        final h = d.focusMinutes > 0
+                                            ? (d.focusMinutes /
+                                                    (wb.dailyGoalMinutes * 1.2))
+                                                .clamp(0.2, 1.0)
+                                            : 0.15;
+                                        return Container(
+                                          width: 10,
+                                          height: 32 * h,
+                                          decoration: BoxDecoration(
+                                            color: d.isToday
+                                                ? AppColors.primary
+                                                : (d.focusMinutes > 0
+                                                    ? AppColors.primary
+                                                        .withOpacity(0.4)
+                                                    : AppColors.borderLight),
+                                            borderRadius:
+                                                BorderRadius.circular(3),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      orElse: () => const SizedBox.shrink(),
+                    ),
+
+                    const SizedBox(height: 28),
 
                     // Recent Sessions List
                     Row(
@@ -266,7 +465,10 @@ class HomeScreen extends ConsumerWidget {
                       children: [
                         Text(
                           'RECENT SESSIONS',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
                                 color: AppColors.cyan,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 1.0,
@@ -281,7 +483,8 @@ class HomeScreen extends ConsumerWidget {
                             ),
                             child: const Text(
                               'View All',
-                              style: TextStyle(color: AppColors.primary, fontSize: 13),
+                              style: TextStyle(
+                                  color: AppColors.primary, fontSize: 13),
                             ),
                           ),
                       ],
@@ -304,14 +507,20 @@ class HomeScreen extends ConsumerWidget {
                             const SizedBox(height: 12),
                             Text(
                               'No focus sessions yet',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
                                     color: AppColors.textPrimary,
                                   ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Start your first session above to build your streak.',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
                                     color: AppColors.textSecondary,
                                   ),
                               textAlign: TextAlign.center,
@@ -320,7 +529,8 @@ class HomeScreen extends ConsumerWidget {
                         ),
                       )
                     else
-                      ...stats.recentSessions.map((session) => _RecentSessionTile(session: session)),
+                      ...stats.recentSessions
+                          .map((session) => _RecentSessionTile(session: session)),
                   ],
                 ),
               ),
@@ -354,7 +564,7 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
@@ -364,13 +574,13 @@ class _StatCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: iconColor, size: 20),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Text(
             value,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 2),
@@ -380,6 +590,8 @@ class _StatCard extends StatelessWidget {
               color: AppColors.textMuted,
               fontSize: 11,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -426,7 +638,9 @@ class _RecentSessionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  session.label?.isNotEmpty == true ? session.label! : 'Focus Session',
+                  session.label?.isNotEmpty == true
+                      ? session.label!
+                      : 'Focus Session',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: AppColors.textPrimary,
                         fontSize: 15,

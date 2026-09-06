@@ -16,15 +16,29 @@ class WelcomeScreen extends StatelessWidget {
             children: [
               const Spacer(flex: 1),
               Container(
-                width: 64,
-                height: 64,
+                width: 76,
+                height: 76,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.5),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withOpacity(0.25),
+                      blurRadius: 18,
+                      spreadRadius: 2,
+                    ),
+                  ],
                 ),
-                child: const Center(
-                  child: Text('🎯', style: TextStyle(fontSize: 30)),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Center(child: Text('🎯', style: TextStyle(fontSize: 34))),
+                  ),
                 ),
               ),
               const SizedBox(height: 32),

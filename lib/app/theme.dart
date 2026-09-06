@@ -2,26 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  // Backgrounds
-  static const Color background = Color(0xFF0A0F1D);
-  static const Color surface = Color(0xFF131C31);
-  static const Color surfaceElevated = Color(0xFF1B2642);
-  static const Color surfaceHover = Color(0xFF243256);
+  // Deep Obsidian Backgrounds
+  static const Color background = Color(0xFF090A0F);
+  static const Color surface = Color(0xFF12151E);
+  static const Color surfaceElevated = Color(0xFF1A1F2C);
+  static const Color surfaceHover = Color(0xFF242A3C);
+  static const Color surfaceGlass = Color(0xCC12151E);
 
-  // Borders
-  static const Color border = Color(0xFF253354);
-  static const Color borderLight = Color(0xFF32446E);
+  // Modern Borders & Dividers
+  static const Color border = Color(0xFF222838);
+  static const Color borderLight = Color(0xFF2E374D);
+  static const Color borderGlow = Color(0x3300E699);
 
-  // Accents
-  static const Color primary = Color(0xFF14B8A6); // Calm Teal
-  static const Color primaryGlow = Color(0x3314B8A6);
-  static const Color cyan = Color(0xFF06B6D4);
-  static const Color purple = Color(0xFF8B5CF6);
-  static const Color amber = Color(0xFFF59E0B);
-  static const Color red = Color(0xFFEF4444);
-  static const Color redGlow = Color(0x33EF4444);
+  // Dynamic Accents
+  static const Color primary = Color(0xFF00E699); // Neon Emerald / Mint
+  static const Color primaryGlow = Color(0x3300E699);
+  static const Color cyan = Color(0xFF38BDF8); // Electric Cyan
+  static const Color cyanGlow = Color(0x3338BDF8);
+  static const Color purple = Color(0xFF818CF8); // Electric Indigo
+  static const Color amber = Color(0xFFFBBF24); // Warm Amber
+  static const Color red = Color(0xFFF43F5E); // Coral Crimson
+  static const Color redGlow = Color(0x33F43F5E);
 
-  // Text
+  // Text Hierarchies
   static const Color textPrimary = Color(0xFFF8FAFC);
   static const Color textSecondary = Color(0xFF94A3B8);
   static const Color textMuted = Color(0xFF64748B);
@@ -38,61 +41,61 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
         surface: AppColors.surface,
-        onPrimary: Colors.white,
+        onPrimary: Color(0xFF090A0F),
         onSurface: AppColors.textPrimary,
         error: AppColors.red,
       ),
       textTheme: GoogleFonts.interTextTheme(baseTextTheme).copyWith(
         displayLarge: GoogleFonts.outfit(
           color: AppColors.textPrimary,
-          fontSize: 40,
-          fontWeight: FontWeight.bold,
+          fontSize: 38,
+          fontWeight: FontWeight.w800,
           letterSpacing: -0.5,
         ),
         displayMedium: GoogleFonts.outfit(
           color: AppColors.textPrimary,
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
+          fontSize: 30,
+          fontWeight: FontWeight.w700,
           letterSpacing: -0.5,
         ),
         headlineLarge: GoogleFonts.outfit(
           color: AppColors.textPrimary,
-          fontSize: 24,
+          fontSize: 22,
           fontWeight: FontWeight.w700,
         ),
         headlineMedium: GoogleFonts.outfit(
           color: AppColors.textPrimary,
-          fontSize: 20,
+          fontSize: 18,
           fontWeight: FontWeight.w600,
         ),
         titleLarge: GoogleFonts.inter(
           color: AppColors.textPrimary,
-          fontSize: 18,
+          fontSize: 17,
           fontWeight: FontWeight.w600,
         ),
         titleMedium: GoogleFonts.inter(
           color: AppColors.textPrimary,
-          fontSize: 16,
+          fontSize: 15,
           fontWeight: FontWeight.w500,
         ),
         bodyLarge: GoogleFonts.inter(
           color: AppColors.textPrimary,
-          fontSize: 16,
+          fontSize: 15,
           fontWeight: FontWeight.normal,
         ),
         bodyMedium: GoogleFonts.inter(
           color: AppColors.textSecondary,
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: FontWeight.normal,
         ),
         bodySmall: GoogleFonts.inter(
           color: AppColors.textMuted,
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.normal,
         ),
         labelLarge: GoogleFonts.inter(
           color: AppColors.textPrimary,
-          fontSize: 14,
+          fontSize: 13,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -111,22 +114,22 @@ class AppTheme {
         color: AppColors.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           side: const BorderSide(color: AppColors.border, width: 1),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: const Color(0xFF090A0F),
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
           textStyle: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -139,7 +142,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(14),
           ),
           textStyle: GoogleFonts.inter(
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -173,3 +176,4 @@ class AppTheme {
     );
   }
 }
+

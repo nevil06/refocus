@@ -1,5 +1,9 @@
 # 🎯 Refocus Again
 
+<p align="center">
+  <img src="assets/images/logo.png" alt="Refocus Again Logo" width="160" />
+</p>
+
 > A production-quality, privacy-first Android focus and digital wellbeing application that reliably locks distracting apps during timed study sessions.
 
 ---
@@ -10,7 +14,13 @@
 
 ---
 
-## ✨ Features (Phase 1 — Core Product)
+## ✨ Features
+
+### 📊 Digital Wellbeing & Focus Analytics
+- **Interactive 7-Day Focus Graph**: Real-time weekly bar charts (Mon–Sun) tracking focused minutes against daily goals.
+- **Focus Mastery Score (0–100)**: Visual arc gauge measuring study consistency, streak retention, and session completion rate.
+- **Peak Performance Window**: Hourly distribution analysis across Morning, Afternoon, Evening, and Night.
+- **Distraction Shield Metrics**: Track blocked distracting apps and completed vs canceled sessions.
 
 ### 🔒 Resilient Native App Blocker
 - Intercepts launch attempts of user-selected distracting apps during active focus sessions.

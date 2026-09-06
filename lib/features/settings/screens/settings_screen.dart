@@ -86,9 +86,9 @@ class SettingsScreen extends ConsumerWidget {
 
           const SizedBox(height: 28),
 
-          // Section 2: App Blocking Setup
+          // Section 2: App Blocking Setup & Digital Wellbeing
           Text(
-            'APP BLOCKING CONFIGURATION',
+            'DIGITAL WELLBEING & FOCUS CONTROLS',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.cyan,
                   fontWeight: FontWeight.bold,
@@ -103,15 +103,30 @@ class SettingsScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppColors.border),
             ),
-            child: ListTile(
-              leading: const Icon(Icons.apps_rounded, color: AppColors.primary),
-              title: const Text('Manage Blocked Apps'),
-              subtitle: const Text(
-                'Customize apps that get locked during sessions',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
-              onTap: () => context.push('/apps'),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.insights_rounded, color: AppColors.cyan),
+                  title: const Text('Digital Wellbeing Dashboard'),
+                  subtitle: const Text(
+                    'Weekly focus charts, daily goals & focus score',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                  onTap: () => context.push('/wellbeing'),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.apps_rounded, color: AppColors.primary),
+                  title: const Text('Manage Blocked Apps'),
+                  subtitle: const Text(
+                    'Customize apps that get locked during sessions',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                  ),
+                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                  onTap: () => context.push('/apps'),
+                ),
+              ],
             ),
           ),
 
@@ -163,20 +178,42 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 32),
 
           // Section 4: About
           Center(
             child: Column(
               children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.4),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.hourglass_bottom_rounded,
+                              color: AppColors.primary),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 Text(
-                  'REFOCUS AGAIN • Phase 1 (Core Focus)',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textMuted,
-                        letterSpacing: 0.5,
+                  'REFOCUS AGAIN',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
                       ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   'v1.0.0 (Android Native + Flutter)',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -187,7 +224,7 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
         ],
       ),
     );
