@@ -19,13 +19,68 @@ enum SessionStatus {
   }
 }
 
+enum StrictModeType {
+  off,      // Normal Mode: "Give up and Stop" available immediately
+  friction, // Existing Strict Mode: 5s countdown + type "STOP"
+  locked;   // Locked Mode (NEW): No cancel UI anywhere, natural timer completion only
+
+  static StrictModeType fromString(String? value) {
+    switch (value?.toLowerCase()) {
+      case 'locked':
+        return StrictModeType.locked;
+      case 'friction':
+      case 'strict':
+      case 'true':
+        return StrictModeType.friction;
+      case 'off':
+      case 'false':
+      default:
+        return StrictModeType.off;
+    }
+  }
+
+  static StrictModeType fromInt(int? value) {
+    switch (value) {
+      case 2:
+        return StrictModeType.locked;
+      case 1:
+        return StrictModeType.friction;
+      case 0:
+      default:
+        return StrictModeType.off;
+    }
+  }
+
+  int toInt() {
+    switch (this) {
+      case StrictModeType.locked:
+        return 2;
+      case StrictModeType.friction:
+        return 1;
+      case StrictModeType.off:
+        return 0;
+    }
+  }
+
+  String get displayName {
+    switch (this) {
+      case StrictModeType.locked:
+        return 'Locked (No Exit)';
+      case StrictModeType.friction:
+        return 'Friction (5s + STOP)';
+      case StrictModeType.off:
+        return 'Off (Normal)';
+    }
+  }
+}
+
 class FocusSessionModel {
   final String id;
   final DateTime startTime;
   final DateTime plannedEndTime;
   final int durationSeconds;
   final SessionStatus status;
-  final bool isStrictMode;
+  final StrictModeType strictModeType;
   final DateTime createdAt;
   final DateTime? completedAt;
   final List<String> blockedApps;
@@ -37,12 +92,18 @@ class FocusSessionModel {
     required this.plannedEndTime,
     required this.durationSeconds,
     required this.status,
-    required this.isStrictMode,
+    StrictModeType? strictModeType,
+    bool? isStrictMode,
     required this.createdAt,
     this.completedAt,
     required this.blockedApps,
     this.label,
-  });
+  }) : strictModeType = strictModeType ??
+            (isStrictMode == true ? StrictModeType.friction : StrictModeType.off);
+
+  bool get isStrictMode => strictModeType != StrictModeType.off;
+  bool get isLockedMode => strictModeType == StrictModeType.locked;
+  bool get isFrictionMode => strictModeType == StrictModeType.friction;
 
   int get remainingSeconds {
     final now = DateTime.now();
@@ -72,6 +133,7 @@ class FocusSessionModel {
     DateTime? plannedEndTime,
     int? durationSeconds,
     SessionStatus? status,
+    StrictModeType? strictModeType,
     bool? isStrictMode,
     DateTime? createdAt,
     DateTime? completedAt,
@@ -84,7 +146,10 @@ class FocusSessionModel {
       plannedEndTime: plannedEndTime ?? this.plannedEndTime,
       durationSeconds: durationSeconds ?? this.durationSeconds,
       status: status ?? this.status,
-      isStrictMode: isStrictMode ?? this.isStrictMode,
+      strictModeType: strictModeType ??
+          (isStrictMode != null
+              ? (isStrictMode ? StrictModeType.friction : StrictModeType.off)
+              : this.strictModeType),
       createdAt: createdAt ?? this.createdAt,
       completedAt: completedAt ?? this.completedAt,
       blockedApps: blockedApps ?? this.blockedApps,

@@ -28,7 +28,7 @@ void main() {
         plannedEndTime: now.add(const Duration(minutes: 15)),
         durationSeconds: 1500,
         status: SessionStatus.active,
-        isStrictMode: true,
+        strictModeType: StrictModeType.friction,
         createdAt: now.subtract(const Duration(minutes: 10)),
         blockedApps: ['com.instagram.android', 'com.google.android.youtube'],
       );
@@ -38,6 +38,44 @@ void main() {
       expect(session.remainingSeconds <= 900, true);
       expect(session.progressFraction > 0.0, true);
       expect(session.progressFraction < 1.0, true);
+      expect(session.isStrictMode, true);
+      expect(session.isFrictionMode, true);
+      expect(session.isLockedMode, false);
+    });
+
+    test('supports 3 distinct StrictModeType tiers (Off, Friction, Locked)', () {
+      final offSession = FocusSessionModel(
+        id: 'off-1',
+        startTime: DateTime.now(),
+        plannedEndTime: DateTime.now().add(const Duration(minutes: 25)),
+        durationSeconds: 1500,
+        status: SessionStatus.active,
+        strictModeType: StrictModeType.off,
+        createdAt: DateTime.now(),
+        blockedApps: [],
+      );
+      expect(offSession.isStrictMode, false);
+      expect(offSession.isFrictionMode, false);
+      expect(offSession.isLockedMode, false);
+
+      final frictionSession = offSession.copyWith(strictModeType: StrictModeType.friction);
+      expect(frictionSession.isStrictMode, true);
+      expect(frictionSession.isFrictionMode, true);
+      expect(frictionSession.isLockedMode, false);
+
+      final lockedSession = offSession.copyWith(strictModeType: StrictModeType.locked);
+      expect(lockedSession.isStrictMode, true);
+      expect(lockedSession.isFrictionMode, false);
+      expect(lockedSession.isLockedMode, true);
+
+      // Verify conversions
+      expect(StrictModeType.fromInt(0), StrictModeType.off);
+      expect(StrictModeType.fromInt(1), StrictModeType.friction);
+      expect(StrictModeType.fromInt(2), StrictModeType.locked);
+
+      expect(StrictModeType.off.toInt(), 0);
+      expect(StrictModeType.friction.toInt(), 1);
+      expect(StrictModeType.locked.toInt(), 2);
     });
   });
 

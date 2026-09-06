@@ -52,7 +52,17 @@ class FocusTimerScreen extends ConsumerWidget {
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
         if (didPop) return;
-        _promptStopSession(context, activeSession.isStrictMode, focusNotifier);
+        if (activeSession.isLockedMode) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Session is in Locked Mode. Early cancellation is disabled.'),
+              backgroundColor: AppColors.red,
+              duration: Duration(seconds: 2),
+            ),
+          );
+          return;
+        }
+        _promptStopSession(context, activeSession.isFrictionMode, focusNotifier);
       },
       child: Scaffold(
         body: SafeArea(
@@ -72,7 +82,32 @@ class FocusTimerScreen extends ConsumerWidget {
                             letterSpacing: 1.5,
                           ),
                     ),
-                    if (activeSession.isStrictMode)
+                    if (activeSession.isLockedMode)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.red.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: AppColors.red.withOpacity(0.4)),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.lock_rounded, size: 12, color: AppColors.red),
+                            SizedBox(width: 4),
+                            Text(
+                              'LOCKED',
+                              style: TextStyle(
+                                color: AppColors.red,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else if (activeSession.isFrictionMode)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
@@ -83,10 +118,10 @@ class FocusTimerScreen extends ConsumerWidget {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.lock_rounded, size: 12, color: AppColors.amber),
+                            Icon(Icons.lock_clock_rounded, size: 12, color: AppColors.amber),
                             SizedBox(width: 4),
                             Text(
-                              'STRICT',
+                              'FRICTION',
                               style: TextStyle(
                                 color: AppColors.amber,
                                 fontSize: 10,
@@ -201,22 +236,48 @@ class FocusTimerScreen extends ConsumerWidget {
 
                 const SizedBox(height: 32),
 
-                // Stop Button
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => _promptStopSession(
-                      context,
-                      activeSession.isStrictMode,
-                      focusNotifier,
+                // Stop / Commitment UI
+                if (activeSession.isLockedMode)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.red.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.red.withOpacity(0.3)),
                     ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: AppColors.red.withOpacity(0.5)),
-                      foregroundColor: AppColors.red,
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.lock_rounded, color: AppColors.red, size: 18),
+                        SizedBox(width: 10),
+                        Text(
+                          'Locked Mode • Runs until timer completes',
+                          style: TextStyle(
+                            color: AppColors.red,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
-                    child: const Text('Give Up & Stop'),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => _promptStopSession(
+                        context,
+                        activeSession.isFrictionMode,
+                        focusNotifier,
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: AppColors.red.withOpacity(0.5)),
+                        foregroundColor: AppColors.red,
+                      ),
+                      child: const Text('Give Up & Stop'),
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -227,12 +288,12 @@ class FocusTimerScreen extends ConsumerWidget {
 
   void _promptStopSession(
     BuildContext context,
-    bool isStrictMode,
+    bool isFrictionMode,
     FocusSessionNotifier focusNotifier,
   ) {
     StrictModeStopDialog.show(
       context,
-      isStrictMode: isStrictMode,
+      isStrictMode: isFrictionMode,
       onConfirmStop: () async {
         await focusNotifier.stopSession(isInterrupted: true);
         if (context.mounted) {

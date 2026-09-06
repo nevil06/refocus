@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
+import '../../../core/models/focus_session.dart';
 import '../../app_selection/providers/app_selection_provider.dart';
 import '../providers/focus_session_provider.dart';
 import '../widgets/duration_picker.dart';
@@ -16,7 +17,7 @@ class SessionSetupScreen extends ConsumerStatefulWidget {
 class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   final TextEditingController _labelController = TextEditingController();
   int _selectedMinutes = 25;
-  bool _isStrictMode = false;
+  StrictModeType _strictMode = StrictModeType.off;
 
   @override
   void dispose() {
@@ -116,6 +117,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                                   : 'Tap to customize blocked list',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                     color: AppColors.textSecondary,
+                                    fontSize: 12,
                                   ),
                             ),
                           ],
@@ -128,57 +130,141 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
               ),
               const SizedBox(height: 28),
 
-              // 4. Strict Mode Card
+              // 4. 3-Tier Strict Mode Selector Card (Off / Friction / Locked)
+              Text(
+                'STRICT MODE LEVEL',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.cyan,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                    ),
+              ),
+              const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: _isStrictMode ? AppColors.amber.withOpacity(0.4) : AppColors.border,
+                    color: _strictMode == StrictModeType.locked
+                        ? AppColors.red.withOpacity(0.5)
+                        : (_strictMode == StrictModeType.friction
+                            ? AppColors.amber.withOpacity(0.5)
+                            : AppColors.border),
                   ),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: _isStrictMode ? AppColors.amber.withOpacity(0.15) : AppColors.surfaceElevated,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.lock_clock_rounded,
-                        color: _isStrictMode ? AppColors.amber : AppColors.textSecondary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Strict Focus Mode',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: _strictMode == StrictModeType.locked
+                                ? AppColors.red.withOpacity(0.15)
+                                : (_strictMode == StrictModeType.friction
+                                    ? AppColors.amber.withOpacity(0.15)
+                                    : AppColors.surfaceElevated),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Prevents quick cancellation with deliberate friction dialogs',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 12,
-                                ),
+                          child: Icon(
+                            _strictMode == StrictModeType.locked
+                                ? Icons.lock_rounded
+                                : (_strictMode == StrictModeType.friction
+                                    ? Icons.lock_clock_rounded
+                                    : Icons.lock_open_rounded),
+                            color: _strictMode == StrictModeType.locked
+                                ? AppColors.red
+                                : (_strictMode == StrictModeType.friction
+                                    ? AppColors.amber
+                                    : AppColors.textSecondary),
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _strictMode == StrictModeType.locked
+                                    ? 'Locked Mode (No Exit)'
+                                    : (_strictMode == StrictModeType.friction
+                                        ? 'Friction Mode (5s + STOP)'
+                                        : 'Off (Normal Mode)'),
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      color: AppColors.textPrimary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _strictMode == StrictModeType.locked
+                                    ? 'No way to end session early. Runs until timer completes.'
+                                    : (_strictMode == StrictModeType.friction
+                                        ? 'Requires 5s countdown + typing STOP to cancel.'
+                                        : 'Standard session. Give up option available immediately.'),
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 12,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    // 3-Option Segmented Control
+                    SizedBox(
+                      width: double.infinity,
+                      child: SegmentedButton<StrictModeType>(
+                        segments: const [
+                          ButtonSegment(
+                            value: StrictModeType.off,
+                            label: Text('Off'),
+                          ),
+                          ButtonSegment(
+                            value: StrictModeType.friction,
+                            label: Text('Friction'),
+                          ),
+                          ButtonSegment(
+                            value: StrictModeType.locked,
+                            label: Text('Locked'),
                           ),
                         ],
+                        selected: {_strictMode},
+                        onSelectionChanged: (Set<StrictModeType> newSelection) {
+                          setState(() {
+                            _strictMode = newSelection.first;
+                          });
+                        },
+                        style: ButtonStyle(
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          visualDensity: VisualDensity.compact,
+                          backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+                            if (states.contains(WidgetState.selected)) {
+                              if (_strictMode == StrictModeType.locked) {
+                                return AppColors.red.withOpacity(0.2);
+                              }
+                              if (_strictMode == StrictModeType.friction) {
+                                return AppColors.amber.withOpacity(0.2);
+                              }
+                              return AppColors.primary.withOpacity(0.2);
+                            }
+                            return AppColors.surfaceElevated;
+                          }),
+                          foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+                            if (states.contains(WidgetState.selected)) {
+                              if (_strictMode == StrictModeType.locked) return AppColors.red;
+                              if (_strictMode == StrictModeType.friction) return AppColors.amber;
+                              return AppColors.primary;
+                            }
+                            return AppColors.textSecondary;
+                          }),
+                        ),
                       ),
-                    ),
-                    Switch(
-                      value: _isStrictMode,
-                      onChanged: (val) => setState(() => _isStrictMode = val),
-                      activeTrackColor: AppColors.amber,
                     ),
                   ],
                 ),
@@ -204,7 +290,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
                     final success = await focusNotifier.startFocusSession(
                       durationMinutes: _selectedMinutes,
                       blockedPackages: appSelectionState.selectedPackageNames,
-                      isStrictMode: _isStrictMode,
+                      strictModeType: _strictMode,
                       label: _labelController.text.trim().isEmpty
                           ? null
                           : _labelController.text.trim(),

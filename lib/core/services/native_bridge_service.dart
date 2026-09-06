@@ -41,6 +41,7 @@ class NativeBridgeService {
     required int durationSeconds,
     required List<String> blockedPackages,
     required bool isStrict,
+    int? strictModeType,
     String? label,
   }) async {
     try {
@@ -51,6 +52,7 @@ class NativeBridgeService {
         'durationSeconds': durationSeconds,
         'blockedPackages': blockedPackages,
         'isStrict': isStrict,
+        'strictModeType': strictModeType ?? (isStrict ? 1 : 0),
         'label': label ?? '',
       });
       return result ?? false;
@@ -110,6 +112,41 @@ class NativeBridgeService {
       return result ?? false;
     } catch (_) {
       return true;
+    }
+  }
+
+  Future<bool> getNotificationPermissionStatus() async {
+    try {
+      final bool? result = await _channel.invokeMethod<bool>('getNotificationPermissionStatus');
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> requestNotificationAccess() async {
+    try {
+      await _channel.invokeMethod('requestNotificationAccess');
+    } catch (_) {}
+  }
+
+  Future<bool> isNotificationBlockingEnabled() async {
+    try {
+      final bool? result = await _channel.invokeMethod<bool>('isNotificationBlockingEnabled');
+      return result ?? true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  Future<bool> setNotificationBlockingEnabled(bool enabled) async {
+    try {
+      final bool? result = await _channel.invokeMethod<bool>('setNotificationBlockingEnabled', {
+        'enabled': enabled,
+      });
+      return result ?? true;
+    } catch (_) {
+      return false;
     }
   }
 

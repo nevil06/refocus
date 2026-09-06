@@ -25,3 +25,26 @@ final permissionStatusProvider = FutureProvider.autoDispose<PermissionStatusStat
   final service = ref.watch(permissionServiceProvider);
   return await service.checkAllPermissions();
 });
+
+final notificationBlockingEnabledProvider = StateNotifierProvider<NotificationBlockingNotifier, bool>((ref) {
+  final bridge = ref.watch(nativeBridgeProvider);
+  return NotificationBlockingNotifier(bridge);
+});
+
+class NotificationBlockingNotifier extends StateNotifier<bool> {
+  final NativeBridgeService _bridge;
+
+  NotificationBlockingNotifier(this._bridge) : super(true) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final enabled = await _bridge.isNotificationBlockingEnabled();
+    state = enabled;
+  }
+
+  Future<void> toggle(bool enabled) async {
+    state = enabled;
+    await _bridge.setNotificationBlockingEnabled(enabled);
+  }
+}

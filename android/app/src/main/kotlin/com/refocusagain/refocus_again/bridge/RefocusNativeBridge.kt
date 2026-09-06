@@ -12,10 +12,13 @@ import android.os.Process
 import android.provider.Settings
 import android.text.TextUtils
 import androidx.core.content.ContextCompat
+import android.content.ComponentName
 import com.refocusagain.refocus_again.apps.InstalledAppsProvider
+import com.refocusagain.refocus_again.blocking.NotificationBlockController
 import com.refocusagain.refocus_again.blocking.SessionStateManager
 import com.refocusagain.refocus_again.service.FocusBlockerService
 import com.refocusagain.refocus_again.service.RefocusAccessibilityService
+import com.refocusagain.refocus_again.service.RefocusNotificationListener
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -66,6 +69,7 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
                     val durationSeconds = (call.argument<Number>("durationSeconds"))?.toLong() ?: 0L
                     val blockedPackages = call.argument<List<String>>("blockedPackages") ?: emptyList()
                     val isStrict = call.argument<Boolean>("isStrict") ?: false
+                    val strictModeType = (call.argument<Number>("strictModeType"))?.toInt() ?: if (isStrict) 1 else 0
                     val label = call.argument<String>("label")
 
                     SessionStateManager.saveSession(
@@ -76,7 +80,8 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
                         durationSeconds,
                         blockedPackages,
                         isStrict,
-                        label
+                        label,
+                        strictModeType
                     )
 
                     FocusBlockerService.startService(context)
@@ -109,6 +114,21 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
             }
             "hasNotificationPermission" -> {
                 result.success(hasNotificationPermission())
+            }
+            "getNotificationPermissionStatus", "isNotificationListenerEnabled" -> {
+                result.success(isNotificationListenerEnabled())
+            }
+            "requestNotificationAccess", "openNotificationListenerSettings" -> {
+                openNotificationListenerSettings()
+                result.success(true)
+            }
+            "isNotificationBlockingEnabled" -> {
+                result.success(NotificationBlockController.isNotificationBlockingEnabled(context))
+            }
+            "setNotificationBlockingEnabled" -> {
+                val enabled = call.argument<Boolean>("enabled") ?: true
+                NotificationBlockController.setNotificationBlockingEnabled(context, enabled)
+                result.success(true)
             }
             "hasUsageStatsPermission" -> {
                 result.success(hasUsageStatsPermission())
@@ -206,6 +226,29 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
             )
         }
         return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    private fun isNotificationListenerEnabled(): Boolean {
+        if (RefocusNotificationListener.isListenerConnected) return true
+        val enabledListeners = Settings.Secure.getString(
+            context.contentResolver,
+            "enabled_notification_listeners"
+        ) ?: return false
+
+        val expectedComponent = ComponentName(context, RefocusNotificationListener::class.java).flattenToString()
+        return enabledListeners.contains(expectedComponent) ||
+                enabledListeners.contains(RefocusNotificationListener::class.java.simpleName)
+    }
+
+    private fun openNotificationListenerSettings() {
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+        } else {
+            Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")
+        }.apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        context.startActivity(intent)
     }
 
     private fun openUsageStatsSettings() {

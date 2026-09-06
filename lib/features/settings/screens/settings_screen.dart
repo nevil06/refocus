@@ -57,6 +57,23 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   const Divider(height: 1),
                   ListTile(
+                    title: const Text('Notification Access (Notification Muting)'),
+                    subtitle: Text(
+                      permissions.isNotificationListenerGranted
+                          ? 'Active — incoming notifications from blocked apps will be silenced'
+                          : 'Disabled — required to silence notifications from blocked apps',
+                      style: TextStyle(
+                        color: permissions.isNotificationListenerGranted
+                            ? AppColors.primary
+                            : AppColors.amber,
+                        fontSize: 12,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                    onTap: () => permissionService.requestNotificationAccess(),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
                     title: const Text('Battery Optimization Exemption'),
                     subtitle: Text(
                       permissions.isBatteryOptimizationIgnored
@@ -125,6 +142,27 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                   onTap: () => context.push('/apps'),
+                ),
+                const Divider(height: 1),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final notifBlockingEnabled = ref.watch(notificationBlockingEnabledProvider);
+                    final notifNotifier = ref.read(notificationBlockingEnabledProvider.notifier);
+
+                    return SwitchListTile(
+                      secondary: const Icon(Icons.notifications_off_rounded, color: AppColors.primary),
+                      title: const Text('Silence notifications from blocked apps'),
+                      subtitle: const Text(
+                        'Automatically mute banners and alerts from blocked apps during active focus',
+                        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                      ),
+                      value: notifBlockingEnabled,
+                      activeTrackColor: AppColors.primary,
+                      onChanged: (val) {
+                        notifNotifier.toggle(val);
+                      },
+                    );
+                  },
                 ),
               ],
             ),

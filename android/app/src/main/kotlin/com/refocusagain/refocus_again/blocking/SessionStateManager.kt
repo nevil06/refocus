@@ -12,6 +12,7 @@ object SessionStateManager {
     private const val KEY_DURATION_SECONDS = "refocus_duration_seconds"
     private const val KEY_BLOCKED_PACKAGES = "refocus_blocked_packages"
     private const val KEY_IS_STRICT = "refocus_is_strict"
+    private const val KEY_STRICT_MODE_TYPE = "refocus_strict_mode_type"
     private const val KEY_IS_ACTIVE = "refocus_is_active"
     private const val KEY_SESSION_LABEL = "refocus_session_label"
 
@@ -27,7 +28,8 @@ object SessionStateManager {
         durationSeconds: Long,
         blockedPackages: List<String>,
         isStrict: Boolean,
-        label: String? = null
+        label: String? = null,
+        strictModeType: Int = if (isStrict) 1 else 0
     ) {
         val jsonArray = JSONArray(blockedPackages)
         getPrefs(context).edit().apply {
@@ -36,7 +38,8 @@ object SessionStateManager {
             putLong(KEY_END_TIME, endTimeEpochMs)
             putLong(KEY_DURATION_SECONDS, durationSeconds)
             putString(KEY_BLOCKED_PACKAGES, jsonArray.toString())
-            putBoolean(KEY_IS_STRICT, isStrict)
+            putBoolean(KEY_IS_STRICT, isStrict || strictModeType > 0)
+            putInt(KEY_STRICT_MODE_TYPE, strictModeType)
             putBoolean(KEY_IS_ACTIVE, true)
             putString(KEY_SESSION_LABEL, label ?: "")
             apply()
@@ -51,8 +54,18 @@ object SessionStateManager {
             putLong(KEY_END_TIME, 0L)
             putString(KEY_BLOCKED_PACKAGES, "[]")
             putBoolean(KEY_IS_STRICT, false)
+            putInt(KEY_STRICT_MODE_TYPE, 0)
             putString(KEY_SESSION_LABEL, "")
             apply()
+        }
+    }
+
+    fun getStrictModeType(context: Context): Int {
+        val prefs = getPrefs(context)
+        return if (prefs.contains(KEY_STRICT_MODE_TYPE)) {
+            prefs.getInt(KEY_STRICT_MODE_TYPE, 0)
+        } else {
+            if (prefs.getBoolean(KEY_IS_STRICT, false)) 1 else 0
         }
     }
 
@@ -123,6 +136,7 @@ object SessionStateManager {
             "durationSeconds" to prefs.getLong(KEY_DURATION_SECONDS, 0L),
             "blockedPackages" to blockedList,
             "isStrict" to prefs.getBoolean(KEY_IS_STRICT, false),
+            "strictModeType" to getStrictModeType(context),
             "label" to prefs.getString(KEY_SESSION_LABEL, ""),
             "remainingSeconds" to (getRemainingMillis(context) / 1000)
         )

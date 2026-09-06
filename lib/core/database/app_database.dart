@@ -63,7 +63,7 @@ class AppDatabase {
         'planned_end_time': session.plannedEndTime.millisecondsSinceEpoch,
         'duration_seconds': session.durationSeconds,
         'status': session.status.name,
-        'is_strict': session.isStrictMode ? 1 : 0,
+        'is_strict': session.strictModeType.toInt(),
         'created_at': session.createdAt.millisecondsSinceEpoch,
         'completed_at': session.completedAt?.millisecondsSinceEpoch,
         'blocked_apps_json': jsonEncode(session.blockedApps),
@@ -216,13 +216,15 @@ class AppDatabase {
       }
     } catch (_) {}
 
+    final strictVal = map['is_strict'] as int? ?? 0;
+
     return FocusSessionModel(
       id: map['id'] as String,
       startTime: DateTime.fromMillisecondsSinceEpoch(map['start_time'] as int),
       plannedEndTime: DateTime.fromMillisecondsSinceEpoch(map['planned_end_time'] as int),
       durationSeconds: map['duration_seconds'] as int,
       status: SessionStatus.fromString(map['status'] as String),
-      isStrictMode: (map['is_strict'] as int? ?? 0) == 1,
+      strictModeType: StrictModeType.fromInt(strictVal),
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
       completedAt: map['completed_at'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['completed_at'] as int)

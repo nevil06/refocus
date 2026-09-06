@@ -64,7 +64,11 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
           final durationSec = nativeSessionData['durationSeconds'] as int? ?? ((endTimeMs - startTimeMs) ~/ 1000);
           final rawPackages = nativeSessionData['blockedPackages'] as List<dynamic>? ?? [];
           final blockedList = rawPackages.map((e) => e.toString()).toList();
+          final rawStrictType = nativeSessionData['strictModeType'] as int?;
           final isStrict = nativeSessionData['isStrict'] as bool? ?? false;
+          final strictModeType = rawStrictType != null
+              ? StrictModeType.fromInt(rawStrictType)
+              : (isStrict ? StrictModeType.friction : StrictModeType.off);
           final label = nativeSessionData['label'] as String?;
 
           final session = FocusSessionModel(
@@ -73,7 +77,7 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
             plannedEndTime: DateTime.fromMillisecondsSinceEpoch(endTimeMs),
             durationSeconds: durationSec,
             status: SessionStatus.active,
-            isStrictMode: isStrict,
+            strictModeType: strictModeType,
             createdAt: DateTime.fromMillisecondsSinceEpoch(startTimeMs),
             blockedApps: blockedList,
             label: label,
@@ -108,10 +112,14 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
   Future<bool> startFocusSession({
     required int durationMinutes,
     required List<String> blockedPackages,
-    required bool isStrictMode,
+    bool? isStrictMode,
+    StrictModeType? strictModeType,
     String? label,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
+
+    final resolvedStrictMode = strictModeType ??
+        (isStrictMode == true ? StrictModeType.friction : StrictModeType.off);
 
     final sessionId = _uuid.v4();
     final now = DateTime.now();
@@ -124,7 +132,7 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
       plannedEndTime: plannedEndTime,
       durationSeconds: durationSeconds,
       status: SessionStatus.active,
-      isStrictMode: isStrictMode,
+      strictModeType: resolvedStrictMode,
       createdAt: now,
       blockedApps: blockedPackages,
       label: label,
@@ -141,7 +149,8 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
         plannedEndTime: plannedEndTime,
         durationSeconds: durationSeconds,
         blockedPackages: blockedPackages,
-        isStrict: isStrictMode,
+        isStrict: resolvedStrictMode != StrictModeType.off,
+        strictModeType: resolvedStrictMode.toInt(),
         label: label,
       );
 
