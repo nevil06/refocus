@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
+import '../../home/providers/home_provider.dart';
+import '../../history/providers/history_provider.dart';
+import '../../wellbeing/providers/wellbeing_provider.dart';
 
-class SessionCompleteScreen extends StatelessWidget {
+class SessionCompleteScreen extends ConsumerWidget {
   const SessionCompleteScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -47,7 +51,12 @@ class SessionCompleteScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => context.go('/home'),
+                  onPressed: () {
+                    ref.invalidate(wellbeingSummaryProvider);
+                    ref.invalidate(homeStatsProvider);
+                    ref.invalidate(historyProvider);
+                    context.go('/home');
+                  },
                   child: const Text('Done'),
                 ),
               ),

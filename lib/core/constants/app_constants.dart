@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String appName = 'Refocus Again';
+  static const String appName = 'Refocus';
   static const String bridgeChannel = 'com.refocusagain.app/bridge';
 
   // Shared preferences keys

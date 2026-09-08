@@ -66,7 +66,7 @@ class _PermissionSetupScreenState extends ConsumerState<PermissionSetupScreen>
                   _PermissionCard(
                     title: 'Accessibility Service',
                     description:
-                        'Detects when a blocked application opens so Refocus Again can present the focus shield.',
+                        'Detects when a blocked application opens so Refocus can present the focus shield.',
                     isGranted: permissions.isAccessibilityGranted,
                     isRequired: true,
                     onTap: () => permissionService.requestAccessibility(),

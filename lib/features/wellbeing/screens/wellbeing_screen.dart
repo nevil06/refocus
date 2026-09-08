@@ -23,7 +23,7 @@ class _WellbeingScreenState extends ConsumerState<WellbeingScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Digital Wellbeing'),
+        title: const Text('Track Your Focus'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded),

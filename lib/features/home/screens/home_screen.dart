@@ -91,7 +91,7 @@ class HomeScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'Refocus Again',
+                                  'Refocus',
                                   style: Theme.of(context)
                                       .textTheme
                                       .headlineLarge
@@ -109,7 +109,7 @@ class HomeScreen extends ConsumerWidget {
                               icon: const Icon(Icons.insights_rounded,
                                   color: AppColors.cyan),
                               onPressed: () => context.push('/wellbeing'),
-                              tooltip: 'Digital Wellbeing',
+                              tooltip: 'Track Your Focus',
                             ),
                             IconButton(
                               icon: const Icon(Icons.history_rounded,
@@ -362,7 +362,7 @@ class HomeScreen extends ConsumerWidget {
                                       ),
                                       const SizedBox(width: 10),
                                       const Text(
-                                        'DIGITAL WELLBEING',
+                                        'TRACK YOUR FOCUS',
                                         style: TextStyle(
                                           color: AppColors.cyan,
                                           fontSize: 11,

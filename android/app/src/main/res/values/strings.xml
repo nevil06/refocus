@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Refocus Again</string>
-    <string name="accessibility_service_description">Refocus Again uses this service strictly to detect when user-selected distracting apps are opened during an active focus session, displaying a blocking screen to help you stay focused. It does not read screen content, keystrokes, or personal data.</string>
+    <string name="app_name">Refocus</string>
+    <string name="accessibility_service_description">Refocus uses this service strictly to detect when user-selected distracting apps are opened during an active focus session, displaying a blocking screen to help you stay focused. It does not read screen content, keystrokes, or personal data.</string>
     <string name="accessibility_service_summary">Focus session app blocker</string>
     <string name="notification_channel_name">Focus Session</string>
     <string name="notification_channel_desc">Shows active focus session status and remaining time</string>

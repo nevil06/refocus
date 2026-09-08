@@ -75,7 +75,7 @@ class FocusTimerScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'REFOCUS AGAIN',
+                      'REFOCUS',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.bold,

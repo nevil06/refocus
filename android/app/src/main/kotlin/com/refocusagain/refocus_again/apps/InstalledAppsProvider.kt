@@ -43,8 +43,9 @@ object InstalledAppsProvider {
         val appList = mutableListOf<Map<String, String>>()
         val seenPackages = mutableSetOf<String>()
 
-        // Exclude Refocus Again itself
-        seenPackages.add(context.packageName)
+        // Exclude Refocus itself
+        val ownPackageName = context.packageName
+        seenPackages.add(ownPackageName)
 
         // 1. Discover via Launcher Intent Activities
         try {

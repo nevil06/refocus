@@ -103,9 +103,9 @@ class SettingsScreen extends ConsumerWidget {
 
           const SizedBox(height: 28),
 
-          // Section 2: App Blocking Setup & Digital Wellbeing
+          // Section 2: App Blocking Setup & Focus Tracking
           Text(
-            'DIGITAL WELLBEING & FOCUS CONTROLS',
+            'FOCUS TRACKING & CONTROLS',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.cyan,
                   fontWeight: FontWeight.bold,
@@ -124,7 +124,7 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 ListTile(
                   leading: const Icon(Icons.insights_rounded, color: AppColors.cyan),
-                  title: const Text('Digital Wellbeing Dashboard'),
+                  title: const Text('Track Your Focus'),
                   subtitle: const Text(
                     'Weekly focus charts, daily goals & focus score',
                     style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
@@ -206,7 +206,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Refocus Again runs completely on your device. The Accessibility Service is used strictly to match foreground package names against your blocked list during active focus sessions. No screen content, text, passwords, or personal data are ever read, transmitted, or logged.',
+                  'Refocus runs completely on your device. The Accessibility Service is used strictly to match foreground package names against your blocked list during active focus sessions. No screen content, text, passwords, or personal data are ever read, transmitted, or logged.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                         height: 1.4,
@@ -244,7 +244,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'REFOCUS AGAIN',
+                  'REFOCUS',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.bold,

@@ -2,10 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/models/focus_session.dart';
 import '../../../core/providers/core_providers.dart';
+import '../../focus/providers/focus_session_provider.dart';
 import '../models/wellbeing_analytics.dart';
 
 final wellbeingSummaryProvider =
     FutureProvider.autoDispose<WellbeingSummary>((ref) async {
+  // Watch focusSessionProvider so session transitions automatically invalidate & recompute stats
+  ref.watch(focusSessionProvider);
   final database = ref.watch(databaseProvider);
   final allSessions = await database.getAllSessions();
   final streakDays = await database.calculateCurrentStreakDays();

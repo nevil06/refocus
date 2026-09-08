@@ -1,22 +1,22 @@
-# 🎯 Refocus Again
+# 🎯 Refocus
 
 <p align="center">
-  <img src="assets/images/logo.png" alt="Refocus Again Logo" width="160" />
+  <img src="assets/images/logo.png" alt="Refocus Logo" width="160" />
 </p>
 
-> A production-quality, privacy-first Android focus and digital wellbeing application that reliably locks distracting apps during timed study sessions.
+> A production-quality, privacy-first Android focus and productivity application that reliably locks distracting apps during timed study sessions.
 
 ---
 
 ## 📖 Overview
 
-**Refocus Again** is built to help students, developers, and professionals reclaim deep concentration. Unlike apps that rely purely on frontend timers, **Refocus Again** uses a dual-engine architecture: a calm, modern Flutter interface powered by a dedicated, resilient Kotlin native background blocking service.
+**Refocus** is built to help students, developers, and professionals reclaim deep concentration. Unlike apps that rely purely on frontend timers, **Refocus** uses a dual-engine architecture: a calm, modern Flutter interface powered by a dedicated, resilient Kotlin native background blocking service.
 
 ---
 
 ## ✨ Features
 
-### 📊 Digital Wellbeing & Focus Analytics
+### 📊 Track Your Focus & Analytics
 - **Interactive 7-Day Focus Graph**: Real-time weekly bar charts (Mon–Sun) tracking focused minutes against daily goals.
 - **Focus Mastery Score (0–100)**: Visual arc gauge measuring study consistency, streak retention, and session completion rate.
 - **Peak Performance Window**: Hourly distribution analysis across Morning, Afternoon, Evening, and Night.
@@ -52,7 +52,7 @@
 ## 🏗️ Architecture
 
 ```
-                 REFOCUS AGAIN
+                    REFOCUS
                        │
                 Flutter Application (Dart)
                        │
