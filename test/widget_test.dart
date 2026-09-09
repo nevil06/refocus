@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:refocus_again/core/models/focus_session.dart';
 import 'package:refocus_again/core/models/installed_app.dart';
+import 'package:refocus_again/core/services/permission_service.dart';
 import 'package:refocus_again/core/utils/time_utils.dart';
 
 void main() {
@@ -94,6 +95,25 @@ void main() {
       final toggled = app.copyWith(isSelected: true);
       expect(toggled.isSelected, true);
       expect(toggled.packageName, 'com.instagram.android');
+    });
+  });
+
+  group('PermissionStatusState Tests', () {
+    test('instantiates with Device Admin and Screen Pinning properties', () {
+      const state = PermissionStatusState(
+        isAccessibilityGranted: true,
+        isBatteryOptimizationIgnored: true,
+        isNotificationGranted: true,
+        isNotificationListenerGranted: true,
+        isDeviceAdminActive: true,
+        isScreenPinningEnabled: true,
+      );
+
+      expect(state.isAccessibilityGranted, true);
+      expect(state.isNotificationListenerGranted, true);
+      expect(state.isDeviceAdminActive, true);
+      expect(state.isScreenPinningEnabled, true);
+      expect(state.isCorePermissionGranted, true);
     });
   });
 }

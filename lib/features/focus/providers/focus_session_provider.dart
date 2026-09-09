@@ -7,11 +7,13 @@ class FocusSessionState {
   final FocusSessionModel? activeSession;
   final bool isLoading;
   final String? errorMessage;
+  final bool isScreenPinned;
 
   FocusSessionState({
     this.activeSession,
     this.isLoading = false,
     this.errorMessage,
+    this.isScreenPinned = false,
   });
 
   bool get isSessionActive =>
@@ -23,12 +25,14 @@ class FocusSessionState {
     FocusSessionModel? activeSession,
     bool? isLoading,
     String? errorMessage,
+    bool? isScreenPinned,
     bool clearActiveSession = false,
   }) {
     return FocusSessionState(
       activeSession: clearActiveSession ? null : (activeSession ?? this.activeSession),
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
+      isScreenPinned: isScreenPinned ?? this.isScreenPinned,
     );
   }
 }
@@ -84,11 +88,13 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
           );
 
           await _database.insertSession(session);
-          state = state.copyWith(activeSession: session, isLoading: false);
+          final inLock = await _nativeBridge.isInLockTaskMode();
+          state = state.copyWith(activeSession: session, isLoading: false, isScreenPinned: inLock);
           return;
         } else {
           // Clean up expired session
           await _nativeBridge.stopBlocking();
+          await _nativeBridge.stopScreenPinning();
         }
       }
 
@@ -96,14 +102,16 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
       final dbActiveSession = await _database.getActiveSession();
       if (dbActiveSession != null) {
         if (!dbActiveSession.isExpired) {
-          state = state.copyWith(activeSession: dbActiveSession, isLoading: false);
+          final inLock = await _nativeBridge.isInLockTaskMode();
+          state = state.copyWith(activeSession: dbActiveSession, isLoading: false, isScreenPinned: inLock);
           return;
         } else {
           await _database.updateSessionStatus(dbActiveSession.id, SessionStatus.completed);
         }
       }
 
-      state = state.copyWith(isLoading: false, clearActiveSession: true);
+      await _nativeBridge.stopScreenPinning();
+      state = state.copyWith(isLoading: false, clearActiveSession: true, isScreenPinned: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
@@ -115,6 +123,7 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
     bool? isStrictMode,
     StrictModeType? strictModeType,
     String? label,
+    bool isScreenPinning = false,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
@@ -158,7 +167,16 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
         throw Exception("Failed to start native blocker service.");
       }
 
-      state = state.copyWith(activeSession: session, isLoading: false);
+      // 3. Optional Screen Pinning
+      if (isScreenPinning) {
+        await _nativeBridge.startScreenPinning();
+      }
+
+      state = state.copyWith(
+        activeSession: session,
+        isLoading: false,
+        isScreenPinned: isScreenPinning,
+      );
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -176,9 +194,10 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
     state = state.copyWith(isLoading: true);
     try {
       await _nativeBridge.stopBlocking();
+      await _nativeBridge.stopScreenPinning();
       final finalStatus = isInterrupted ? SessionStatus.interrupted : SessionStatus.cancelled;
       await _database.updateSessionStatus(current.id, finalStatus);
-      state = state.copyWith(isLoading: false, clearActiveSession: true);
+      state = state.copyWith(isLoading: false, clearActiveSession: true, isScreenPinned: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
@@ -191,8 +210,9 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
     state = state.copyWith(isLoading: true);
     try {
       await _nativeBridge.stopBlocking();
+      await _nativeBridge.stopScreenPinning();
       await _database.updateSessionStatus(current.id, SessionStatus.completed, completedAt: DateTime.now());
-      state = state.copyWith(isLoading: false, clearActiveSession: true);
+      state = state.copyWith(isLoading: false, clearActiveSession: true, isScreenPinned: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }

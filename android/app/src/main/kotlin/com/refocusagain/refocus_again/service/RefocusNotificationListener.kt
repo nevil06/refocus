@@ -30,10 +30,19 @@ class RefocusNotificationListener : NotificationListenerService() {
         if (sbn == null) return
 
         try {
-            if (NotificationBlockController.shouldSuppressNotification(this, sbn)) {
+            val pkg = sbn.packageName ?: "unknown"
+            val shouldSuppress = NotificationBlockController.shouldSuppressNotification(this, sbn)
+            Log.d(TAG, "Incoming notification from '$pkg' -> suppress = $shouldSuppress")
+
+            if (shouldSuppress) {
                 // Cancel notification so it doesn't distract the user during active focus
-                cancelNotification(sbn.key)
-                Log.d(TAG, "Cancelled notification for key: ${sbn.key} from ${sbn.packageName}")
+                if (sbn.key != null) {
+                    cancelNotification(sbn.key)
+                } else {
+                    @Suppress("DEPRECATION")
+                    cancelNotification(sbn.packageName, sbn.tag, sbn.id)
+                }
+                Log.d(TAG, "Successfully cancelled notification from '$pkg' (key=${sbn.key})")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error suppressing notification: ${e.message}", e)

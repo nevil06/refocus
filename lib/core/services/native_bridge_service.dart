@@ -164,4 +164,69 @@ class NativeBridgeService {
       await _channel.invokeMethod('openUsageStatsSettings');
     } catch (_) {}
   }
+
+  // Screen Pinning (Lock Task Mode)
+  Future<bool> startScreenPinning() async {
+    try {
+      final bool? result = await _channel.invokeMethod<bool>('startScreenPinning');
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> stopScreenPinning() async {
+    try {
+      final bool? result = await _channel.invokeMethod<bool>('stopScreenPinning');
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> isInLockTaskMode() async {
+    try {
+      final bool? result = await _channel.invokeMethod<bool>('isInLockTaskMode');
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> isScreenPinningEnabled() async {
+    try {
+      final bool? result = await _channel.invokeMethod<bool>('isScreenPinningEnabled');
+      return result ?? true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  Future<void> openScreenPinningSettings() async {
+    try {
+      await _channel.invokeMethod('openScreenPinningSettings');
+    } catch (_) {}
+  }
+
+  // Device Admin (Uninstall Protection)
+  Future<bool> isDeviceAdminActive() async {
+    try {
+      final bool? result = await _channel.invokeMethod<bool>('isDeviceAdminActive');
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> requestDeviceAdmin() async {
+    try {
+      await _channel.invokeMethod('requestDeviceAdmin');
+    } catch (_) {}
+  }
+
+  Future<void> openDeviceAdminSettings() async {
+    try {
+      await _channel.invokeMethod('openDeviceAdminSettings');
+    } catch (_) {}
+  }
 }

@@ -3,9 +3,173 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
 import '../../../core/providers/core_providers.dart';
+import '../../../core/services/permission_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
+
+  void _handleDeviceAdminTap(BuildContext context, bool isActive, PermissionService permissionService) {
+    if (!isActive) {
+      // Show explainer before triggering system ACTION_ADD_DEVICE_ADMIN
+      showDialog(
+        context: context,
+        builder: (dialogCtx) => AlertDialog(
+          backgroundColor: AppColors.surfaceElevated,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: AppColors.border),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.admin_panel_settings_rounded, color: AppColors.primary, size: 24),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Uninstall Protection',
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Prevent uninstallation during focus sessions',
+                style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'This activates Android Device Admin to prevent uninstalling Refocus mid-session as a bypass for Locked Mode.',
+                style: Theme.of(dialogCtx).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Important details:',
+                      style: TextStyle(color: AppColors.cyan, fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '• This is a persistent grant managed by Android OS.\n• To turn off at any time, simply deactivate it in Android Settings → Security → Device Admin apps.',
+                      style: Theme.of(dialogCtx).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                            height: 1.3,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(dialogCtx).pop();
+                await permissionService.requestDeviceAdmin();
+              },
+              child: const Text('Continue to System Dialog'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Show deactivation instructions and button
+      showDialog(
+        context: context,
+        builder: (dialogCtx) => AlertDialog(
+          backgroundColor: AppColors.surfaceElevated,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: AppColors.border),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 24),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Uninstall Protection is ON',
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Device Admin is active. The Android OS prevents uninstallation of Refocus.',
+                style: Theme.of(dialogCtx).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'How to deactivate:',
+                      style: TextStyle(color: AppColors.cyan, fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '1. Open Android Settings\n2. Go to Security → Device Admin apps\n3. Select Refocus Again → tap Deactivate',
+                      style: Theme.of(dialogCtx).textTheme.bodySmall?.copyWith(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                            height: 1.4,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogCtx).pop(),
+              child: const Text('Done', style: TextStyle(color: AppColors.textSecondary)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(dialogCtx).pop();
+                await permissionService.openDeviceAdminSettings();
+              },
+              child: const Text('Open Device Admin Settings'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -88,6 +252,36 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                     trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                     onTap: () => permissionService.requestBatteryOptimization(),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    title: const Text('Uninstall Protection (Device Admin)'),
+                    subtitle: Text(
+                      permissions.isDeviceAdminActive
+                          ? 'Active — OS prevents uninstall mid-session'
+                          : 'Disabled — tap to enable Device Admin protection',
+                      style: TextStyle(
+                        color: permissions.isDeviceAdminActive
+                            ? AppColors.primary
+                            : AppColors.amber,
+                        fontSize: 12,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                    onTap: () => _handleDeviceAdminTap(context, permissions.isDeviceAdminActive, permissionService),
+                  ),
+                  const Divider(height: 1),
+                  ListTile(
+                    title: const Text('Screen Pinning (Lock Task Mode)'),
+                    subtitle: const Text(
+                      'Available — configure per-session on the focus setup screen',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
+                    onTap: () => permissionService.openScreenPinningSettings(),
                   ),
                 ],
               ),

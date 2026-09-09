@@ -2,16 +2,64 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme.dart';
+import '../../../core/providers/core_providers.dart';
 import '../../../core/utils/time_utils.dart';
 import '../providers/focus_session_provider.dart';
 import '../providers/timer_provider.dart';
 import '../widgets/strict_mode_dialog.dart';
 
-class FocusTimerScreen extends ConsumerWidget {
+class FocusTimerScreen extends ConsumerStatefulWidget {
   const FocusTimerScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FocusTimerScreen> createState() => _FocusTimerScreenState();
+}
+
+class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkPinningInterruption();
+    }
+  }
+
+  Future<void> _checkPinningInterruption() async {
+    final sessionState = ref.read(focusSessionProvider);
+    if (sessionState.isSessionActive && sessionState.isScreenPinned) {
+      final bridge = ref.read(nativeBridgeProvider);
+      final inLock = await bridge.isInLockTaskMode();
+      if (!inLock && mounted) {
+        // User exited via system gesture (Back + Recents / Swipe hold)
+        // Log as an interrupted session
+        await ref.read(focusSessionProvider.notifier).stopSession(isInterrupted: true);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Screen unpinned via system gesture. Focus session ended.'),
+              backgroundColor: AppColors.amber,
+              duration: Duration(seconds: 3),
+            ),
+          );
+          context.go('/home');
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final sessionState = ref.watch(focusSessionProvider);
     final timerState = ref.watch(timerProvider);
     final focusNotifier = ref.read(focusSessionProvider.notifier);
@@ -70,7 +118,7 @@ class FocusTimerScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
             child: Column(
               children: [
-                // Top Header: App Branding + Session Label
+                // Top Header: App Branding + Badges
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -82,56 +130,88 @@ class FocusTimerScreen extends ConsumerWidget {
                             letterSpacing: 1.5,
                           ),
                     ),
-                    if (activeSession.isLockedMode)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.red.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.red.withOpacity(0.4)),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.lock_rounded, size: 12, color: AppColors.red),
-                            SizedBox(width: 4),
-                            Text(
-                              'LOCKED',
-                              style: TextStyle(
-                                color: AppColors.red,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (sessionState.isScreenPinned) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.cyan.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.cyan.withOpacity(0.4)),
                             ),
-                          ],
-                        ),
-                      )
-                    else if (activeSession.isFrictionMode)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.amber.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: AppColors.amber.withOpacity(0.4)),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.lock_clock_rounded, size: 12, color: AppColors.amber),
-                            SizedBox(width: 4),
-                            Text(
-                              'FRICTION',
-                              style: TextStyle(
-                                color: AppColors.amber,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.push_pin_rounded, size: 12, color: AppColors.cyan),
+                                SizedBox(width: 4),
+                                Text(
+                                  'PINNED',
+                                  style: TextStyle(
+                                    color: AppColors.cyan,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        if (activeSession.isLockedMode)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.red.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.red.withOpacity(0.4)),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.lock_rounded, size: 12, color: AppColors.red),
+                                SizedBox(width: 4),
+                                Text(
+                                  'LOCKED',
+                                  style: TextStyle(
+                                    color: AppColors.red,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else if (activeSession.isFrictionMode)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.amber.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.amber.withOpacity(0.4)),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.lock_clock_rounded, size: 12, color: AppColors.amber),
+                                SizedBox(width: 4),
+                                Text(
+                                  'FRICTION',
+                                  style: TextStyle(
+                                    color: AppColors.amber,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
                 const SizedBox(height: 28),

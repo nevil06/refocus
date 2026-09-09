@@ -1,7 +1,10 @@
 package com.refocusagain.refocus_again.bridge
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.AppOpsManager
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,11 +14,12 @@ import android.os.PowerManager
 import android.os.Process
 import android.provider.Settings
 import android.text.TextUtils
+import android.util.Log
 import androidx.core.content.ContextCompat
-import android.content.ComponentName
 import com.refocusagain.refocus_again.apps.InstalledAppsProvider
 import com.refocusagain.refocus_again.blocking.NotificationBlockController
 import com.refocusagain.refocus_again.blocking.SessionStateManager
+import com.refocusagain.refocus_again.receiver.RefocusDeviceAdminReceiver
 import com.refocusagain.refocus_again.service.FocusBlockerService
 import com.refocusagain.refocus_again.service.RefocusAccessibilityService
 import com.refocusagain.refocus_again.service.RefocusNotificationListener
@@ -25,12 +29,12 @@ import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class RefocusNativeBridge(private val context: Context, private val activity: Activity?) : MethodChannel.MethodCallHandler {
 
     companion object {
         const val CHANNEL_NAME = "com.refocusagain.app/bridge"
+        private const val TAG = "RefocusNativeBridge"
 
         fun registerWith(messenger: BinaryMessenger, context: Context, activity: Activity?): RefocusNativeBridge {
             val channel = MethodChannel(messenger, CHANNEL_NAME)
@@ -135,6 +139,64 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
             }
             "openUsageStatsSettings" -> {
                 openUsageStatsSettings()
+                result.success(true)
+            }
+            // Screen Pinning (Lock Task Mode)
+            "startScreenPinning", "startLockTask" -> {
+                try {
+                    if (activity != null) {
+                        activity.startLockTask()
+                        Log.d(TAG, "Screen pinning (LockTask) started successfully")
+                        result.success(true)
+                    } else {
+                        Log.w(TAG, "Cannot startLockTask: Activity is null")
+                        result.success(false)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to startLockTask: ${e.message}", e)
+                    result.error("SCREEN_PINNING_ERROR", e.message, null)
+                }
+            }
+            "stopScreenPinning", "stopLockTask" -> {
+                try {
+                    if (activity != null) {
+                        activity.stopLockTask()
+                        Log.d(TAG, "Screen pinning (LockTask) stopped successfully")
+                        result.success(true)
+                    } else {
+                        result.success(false)
+                    }
+                } catch (e: Exception) {
+                    // Safe catch if not currently in lock task mode
+                    Log.d(TAG, "stopLockTask exception (normal if not pinned): ${e.message}")
+                    result.success(false)
+                }
+            }
+            "isInLockTaskMode" -> {
+                result.success(isInLockTaskMode())
+            }
+            "isScreenPinningSupported", "isScreenPinningEnabled" -> {
+                result.success(isScreenPinningEnabled())
+            }
+            "openScreenPinningSettings" -> {
+                openScreenPinningSettings()
+                result.success(true)
+            }
+            // Device Admin (Uninstall Protection)
+            "isDeviceAdminActive" -> {
+                result.success(isDeviceAdminActive())
+            }
+            "requestDeviceAdmin" -> {
+                try {
+                    requestDeviceAdmin()
+                    result.success(true)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to request Device Admin: ${e.message}", e)
+                    result.error("DEVICE_ADMIN_ERROR", e.message, null)
+                }
+            }
+            "openDeviceAdminSettings" -> {
+                openDeviceAdminSettings()
                 result.success(true)
             }
             else -> {
@@ -256,5 +318,98 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
         context.startActivity(intent)
+    }
+
+    // Screen Pinning Helpers
+    private fun isScreenPinningEnabled(): Boolean {
+        return try {
+            val lockToApp = Settings.System.getInt(context.contentResolver, "lock_to_app_enabled", -1)
+            if (lockToApp != -1) {
+                lockToApp == 1
+            } else {
+                val secureLockToApp = Settings.Secure.getInt(context.contentResolver, "lock_to_app_enabled", -1)
+                if (secureLockToApp != -1) {
+                    secureLockToApp == 1
+                } else {
+                    true
+                }
+            }
+        } catch (_: Exception) {
+            true
+        }
+    }
+
+    private fun isInLockTaskMode(): Boolean {
+        val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager ?: return false
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            am.lockTaskModeState != ActivityManager.LOCK_TASK_MODE_NONE
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            @Suppress("DEPRECATION")
+            am.isInLockTaskMode
+        } else {
+            false
+        }
+    }
+
+    private fun openScreenPinningSettings() {
+        try {
+            val intent = Intent(Settings.ACTION_SECURITY_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+        } catch (_: Exception) {
+            val intent = Intent(Settings.ACTION_SETTINGS).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+        }
+    }
+
+    // Device Admin Helpers
+    private fun isDeviceAdminActive(): Boolean {
+        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as? DevicePolicyManager ?: return false
+        val adminComponent = ComponentName(context, RefocusDeviceAdminReceiver::class.java)
+        return dpm.isAdminActive(adminComponent)
+    }
+
+    private fun requestDeviceAdmin() {
+        val adminComponent = ComponentName(context, RefocusDeviceAdminReceiver::class.java)
+        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
+            putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
+            putExtra(
+                DevicePolicyManager.EXTRA_ADD_EXPLANATION,
+                "Prevents Refocus Again from being uninstalled during locked focus sessions to help you maintain commitment."
+            )
+            if (activity == null) {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+        }
+        if (activity != null) {
+            activity.startActivity(intent)
+        } else {
+            context.startActivity(intent)
+        }
+    }
+
+    private fun openDeviceAdminSettings() {
+        try {
+            val intent = Intent().apply {
+                component = ComponentName("com.android.settings", "com.android.settings.DeviceAdminSettings")
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            context.startActivity(intent)
+        } catch (_: Exception) {
+            try {
+                val fallbackIntent = Intent(Settings.ACTION_SECURITY_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(fallbackIntent)
+            } catch (_: Exception) {
+                val appSettingsIntent = Intent(Settings.ACTION_SETTINGS).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                context.startActivity(appSettingsIntent)
+            }
+        }
     }
 }

@@ -103,7 +103,10 @@ object SessionStateManager {
         try {
             val jsonArray = JSONArray(jsonString)
             for (i in 0 until jsonArray.length()) {
-                set.add(jsonArray.getString(i))
+                val pkg = jsonArray.getString(i)?.trim()
+                if (!pkg.isNullOrEmpty()) {
+                    set.add(pkg)
+                }
             }
         } catch (_: Exception) {
         }
@@ -113,7 +116,8 @@ object SessionStateManager {
     fun isPackageBlocked(context: Context, packageName: String): Boolean {
         if (!isSessionActive(context)) return false
         val blocked = getBlockedPackages(context)
-        return blocked.contains(packageName)
+        val cleanPkg = packageName.trim()
+        return blocked.any { it.equals(cleanPkg, ignoreCase = true) }
     }
 
     fun getActiveSessionData(context: Context): Map<String, Any?>? {
