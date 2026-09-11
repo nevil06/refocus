@@ -6,7 +6,6 @@ import 'package:refocus_again/core/models/installed_app.dart';
 import 'package:refocus_again/core/services/permission_service.dart';
 import 'package:refocus_again/core/utils/time_utils.dart';
 import 'package:refocus_again/core/widgets/refocus_components.dart';
-import 'package:refocus_again/features/study/screens/youtube_study_screen.dart';
 
 void main() {
   group('TimeUtils Tests', () {
@@ -164,13 +163,6 @@ void main() {
 
       expect(find.text('24:17'), findsOneWidget);
       expect(find.text('25m planned'), findsOneWidget);
-    });
-
-    test('StudyVideoItem catalog contains valid educational videos', () {
-      expect(studyVideos.isNotEmpty, true);
-      expect(studyVideos.any((v) => v.category == 'Physics'), true);
-      expect(studyVideos.any((v) => v.category == 'Math'), true);
-      expect(studyVideos.any((v) => v.category == 'CS'), true);
     });
   });
 }

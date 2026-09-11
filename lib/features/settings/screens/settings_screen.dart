@@ -6,7 +6,6 @@ import '../../../app/theme.dart';
 import '../../../core/providers/core_providers.dart';
 import '../../../core/services/permission_service.dart';
 import '../../../core/widgets/refocus_components.dart';
-import '../../study/screens/youtube_study_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -203,7 +202,6 @@ class SettingsScreen extends ConsumerWidget {
     final permissionsAsync = ref.watch(permissionStatusProvider);
     final permissionService = ref.watch(permissionServiceProvider);
     final notifBlockingEnabled = ref.watch(notificationBlockingEnabledProvider);
-    final isStudyModeOn = ref.watch(studyModeEnabledProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -260,24 +258,6 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textMuted),
                           onTap: () => context.push('/apps'),
-                        ),
-                        const Divider(height: 1),
-                        SwitchListTile(
-                          secondary: const Icon(Icons.ondemand_video_rounded, color: AppColors.accentCyan),
-                          title: Text(
-                            'YouTube Study Mode',
-                            style: GoogleFonts.inter(color: AppColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 14),
-                          ),
-                          subtitle: Text(
-                            'Distraction-free educational viewer',
-                            style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 12),
-                          ),
-                          value: isStudyModeOn,
-                          activeColor: AppColors.primary,
-                          activeTrackColor: AppColors.primary.withOpacity(0.4),
-                          onChanged: (val) {
-                            ref.read(studyModeEnabledProvider.notifier).state = val;
-                          },
                         ),
                         const Divider(height: 1),
                         SwitchListTile(

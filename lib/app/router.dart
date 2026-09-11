@@ -9,7 +9,6 @@ import '../features/app_selection/screens/app_selection_screen.dart';
 import '../features/focus/screens/session_setup_screen.dart';
 import '../features/focus/screens/focus_timer_screen.dart';
 import '../features/focus/screens/session_complete_screen.dart';
-import '../features/study/screens/youtube_study_screen.dart';
 import '../features/history/screens/history_screen.dart';
 import '../features/wellbeing/screens/wellbeing_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
@@ -49,10 +48,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/focus/complete',
         builder: (context, state) => const SessionCompleteScreen(),
-      ),
-      GoRoute(
-        path: '/study',
-        builder: (context, state) => const YouTubeStudyScreen(),
       ),
       GoRoute(
         path: '/wellbeing',

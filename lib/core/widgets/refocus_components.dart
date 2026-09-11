@@ -699,7 +699,6 @@ class RefocusBottomNavigation extends StatelessWidget {
     final items = [
       _NavItem(icon: Icons.home_rounded, label: 'Home'),
       _NavItem(icon: Icons.timer_outlined, label: 'Focus'),
-      _NavItem(icon: Icons.ondemand_video_rounded, label: 'Study'),
       _NavItem(icon: Icons.insights_rounded, label: 'Stats'),
     ];
 

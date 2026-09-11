@@ -236,12 +236,11 @@ class _WellbeingScreenState extends ConsumerState<WellbeingScreen> {
         ),
       ),
       bottomNavigationBar: RefocusBottomNavigation(
-        currentIndex: 3, // Stats tab
+        currentIndex: 2, // Stats tab
         onTap: (index) {
           if (index == 0) context.go('/home');
           if (index == 1) context.go('/focus/setup');
-          if (index == 2) context.go('/study');
-          if (index == 3) context.go('/wellbeing');
+          if (index == 2) context.go('/wellbeing');
         },
       ),
     );

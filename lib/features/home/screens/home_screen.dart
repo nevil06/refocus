@@ -338,11 +338,11 @@ class HomeScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _QuickActionCard(
-                            title: 'YouTube Study',
-                            subtitle: 'Distraction-free',
-                            icon: Icons.ondemand_video_rounded,
+                            title: 'Focus History',
+                            subtitle: 'Past sessions',
+                            icon: Icons.history_rounded,
                             iconColor: AppColors.primary,
-                            onTap: () => context.push('/study'),
+                            onTap: () => context.push('/history'),
                           ),
                         ),
                       ],
@@ -410,8 +410,7 @@ class HomeScreen extends ConsumerWidget {
         onTap: (index) {
           if (index == 0) context.go('/home');
           if (index == 1) context.go('/focus/setup');
-          if (index == 2) context.go('/study');
-          if (index == 3) context.go('/wellbeing');
+          if (index == 2) context.go('/wellbeing');
         },
       ),
     );
