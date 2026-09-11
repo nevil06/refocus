@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme.dart';
 import '../../../core/models/installed_app.dart';
+import '../../../core/widgets/refocus_components.dart';
 
 class AppListTile extends StatelessWidget {
   final InstalledApp app;
@@ -16,66 +18,113 @@ class AppListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final iconBytes = app.iconBytes;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: app.isSelected ? AppColors.surfaceElevated : AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: RefocusCard(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        backgroundColor: app.isSelected
+            ? AppColors.primary.withOpacity(0.08)
+            : AppColors.surface,
         border: Border.all(
-          color: app.isSelected ? AppColors.primary.withOpacity(0.35) : AppColors.border,
-          width: 1,
-        ),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: iconBytes != null
-              ? Image.memory(
-                  iconBytes,
-                  width: 42,
-                  height: 42,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => _buildFallbackIcon(),
-                )
-              : _buildFallbackIcon(),
-        ),
-        title: Text(
-          app.appName,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.textPrimary,
-                fontWeight: app.isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          app.packageName,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textMuted,
-                fontSize: 11,
-              ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        trailing: Checkbox(
-          value: app.isSelected,
-          onChanged: onToggle,
-          activeColor: AppColors.primary,
-          checkColor: Colors.black,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+          color: app.isSelected
+              ? AppColors.primary.withOpacity(0.4)
+              : AppColors.border,
+          width: app.isSelected ? 1.5 : 1,
         ),
         onTap: () => onToggle(!app.isSelected),
+        child: Row(
+          children: [
+            // App Icon
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: iconBytes != null
+                  ? Image.memory(
+                      iconBytes,
+                      width: 44,
+                      height: 44,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => _buildFallbackIcon(),
+                    )
+                  : _buildFallbackIcon(),
+            ),
+            const SizedBox(width: 14),
+            // App Name & Package
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    app.appName,
+                    style: GoogleFonts.inter(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: app.isSelected ? FontWeight.w700 : FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    app.packageName,
+                    style: GoogleFonts.inter(
+                      color: AppColors.textMuted,
+                      fontSize: 11,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            // Glowing Purple Switch / Indicator
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: app.isSelected ? AppColors.primary : AppColors.surfaceElevated,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: app.isSelected ? AppColors.primary : AppColors.borderLight,
+                  width: 1.5,
+                ),
+                boxShadow: app.isSelected
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.4),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        )
+                      ]
+                    : null,
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.check_rounded,
+                  size: 16,
+                  color: app.isSelected ? Colors.white : Colors.transparent,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildFallbackIcon() {
     return Container(
-      width: 42,
-      height: 42,
-      color: AppColors.surfaceHover,
-      child: const Icon(Icons.android_rounded, color: AppColors.textSecondary, size: 24),
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: AppColors.surfaceHover,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(
+        Icons.android_rounded,
+        color: AppColors.textSecondary,
+        size: 24,
+      ),
     );
   }
 }

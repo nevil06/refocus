@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme.dart';
+import '../../../core/widgets/refocus_components.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -15,9 +17,10 @@ class WelcomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Spacer(flex: 1),
+              // Brand Glowing Logo
               Container(
-                width: 76,
-                height: 76,
+                width: 80,
+                height: 80,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
@@ -26,8 +29,8 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.25),
-                      blurRadius: 18,
+                      color: AppColors.primary.withOpacity(0.35),
+                      blurRadius: 24,
                       spreadRadius: 2,
                     ),
                   ],
@@ -37,64 +40,78 @@ class WelcomeScreen extends StatelessWidget {
                     'assets/images/logo.png',
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
-                        const Center(child: Text('🎯', style: TextStyle(fontSize: 34))),
+                        const Center(child: Text('🎯', style: TextStyle(fontSize: 36))),
                   ),
                 ),
               ),
               const SizedBox(height: 32),
+              // Brand Name & Tagline
               Text(
-                'REFOCUS\nAGAIN',
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: AppColors.textPrimary,
-                      height: 1.1,
-                    ),
+                'REFOCUS',
+                style: GoogleFonts.outfit(
+                  color: AppColors.textPrimary,
+                  fontSize: 38,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Focus Today. A Better Tomorrow.',
+                style: GoogleFonts.inter(
+                  color: AppColors.secondary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
               const SizedBox(height: 16),
               Text(
                 'Reclaim your attention. Lock distracting apps and dive deep into uninterrupted study sessions.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
-                      height: 1.5,
-                    ),
+                style: GoogleFonts.inter(
+                  color: AppColors.textSecondary,
+                  fontSize: 15,
+                  height: 1.5,
+                ),
               ),
               const Spacer(flex: 2),
-              Container(
+              // Privacy Guarantee Card
+              RefocusCard(
                 padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border),
-                ),
                 child: Row(
                   children: [
-                    const Icon(Icons.shield_outlined, color: AppColors.primary, size: 24),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.14),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.shield_rounded,
+                        color: AppColors.primary,
+                        size: 22,
+                      ),
+                    ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
-                        '100% Private & Offline. No data collection, no accounts required.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                              height: 1.3,
-                            ),
+                        '100% Private & Offline. No telemetry, no accounts required.',
+                        style: GoogleFonts.inter(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => context.push('/onboarding/permissions'),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Get Started'),
-                      SizedBox(width: 8),
-                      Icon(Icons.arrow_forward_rounded, size: 18),
-                    ],
-                  ),
-                ),
+              // Get Started CTA
+              RefocusButton(
+                text: 'Get Started',
+                icon: Icons.arrow_forward_rounded,
+                onPressed: () => context.push('/onboarding/permissions'),
               ),
             ],
           ),

@@ -2,8 +2,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme.dart';
 import '../../../core/utils/time_utils.dart';
+import '../../../core/widgets/refocus_components.dart';
 import '../models/wellbeing_analytics.dart';
 import '../providers/wellbeing_provider.dart';
 
@@ -16,233 +18,254 @@ class WellbeingScreen extends ConsumerStatefulWidget {
 
 class _WellbeingScreenState extends ConsumerState<WellbeingScreen> {
   int? _selectedBarIndex;
+  String _selectedTimeframe = 'Week';
 
   @override
   Widget build(BuildContext context) {
     final wellbeingAsync = ref.watch(wellbeingSummaryProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Track Your Focus'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => ref.invalidate(wellbeingSummaryProvider),
-            tooltip: 'Refresh Analytics',
-          ),
-        ],
-      ),
-      body: wellbeingAsync.when(
-        data: (summary) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 1. Digital Wellbeing Score & Goal Hero Card
-                _ScoreHeroCard(summary: summary),
-                const SizedBox(height: 24),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Top App Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/home');
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Statistics',
+                    style: GoogleFonts.outfit(
+                      color: AppColors.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.refresh_rounded, color: AppColors.textSecondary),
+                    onPressed: () => ref.invalidate(wellbeingSummaryProvider),
+                    tooltip: 'Refresh Analytics',
+                  ),
+                ],
+              ),
+            ),
 
-                // 2. Weekly Focus Graph Section
-                _WeeklyFocusGraph(
-                  last7Days: summary.last7Days,
-                  dailyGoalMinutes: summary.dailyGoalMinutes,
-                  selectedIndex: _selectedBarIndex,
-                  onBarSelected: (index) {
-                    setState(() {
-                      _selectedBarIndex = _selectedBarIndex == index ? null : index;
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
+            // Main Content
+            Expanded(
+              child: wellbeingAsync.when(
+                data: (summary) {
+                  final completedSessions = summary.totalCompletedSessions;
+                  final avgMinutes = completedSessions > 0
+                      ? (summary.todayMinutes / completedSessions).round()
+                      : 0;
 
-                // 3. Peak Focus Time-of-Day Distribution
-                _HourlyDistributionCard(distribution: summary.hourlyDistribution),
-                const SizedBox(height: 24),
-
-                // 4. Distraction Shield & Session Health Grid
-                Row(
-                  children: [
-                    Expanded(
-                      child: _MetricCard(
-                        title: 'Completed',
-                        value: '${summary.totalCompletedSessions}',
-                        subtitle: '${summary.totalInterruptedSessions} canceled',
-                        icon: Icons.check_circle_outline_rounded,
-                        accentColor: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () => context.push('/apps'),
-                        borderRadius: BorderRadius.circular(18),
-                        child: _MetricCard(
-                          title: 'Shielded Apps',
-                          value: '${summary.totalProtectedApps}',
-                          subtitle: 'Tap to configure',
-                          icon: Icons.shield_rounded,
-                          accentColor: AppColors.cyan,
-                          showArrow: true,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-
-                // 5. Recent Activity Quick View
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'RECENT FOCUS SESSIONS',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.cyan,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                          ),
-                    ),
-                    TextButton(
-                      onPressed: () => context.push('/history'),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                      ),
-                      child: const Text(
-                        'Full History',
-                        style: TextStyle(color: AppColors.primary, fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                if (summary.recentSessions.isEmpty)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'No focus sessions recorded yet.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: AppColors.textMuted,
-                            ),
-                      ),
-                    ),
-                  )
-                else
-                  ...summary.recentSessions.map((session) => Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.border),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: session.status.name == 'completed'
-                                    ? AppColors.primary.withOpacity(0.12)
-                                    : AppColors.red.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(10),
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Timeframe Segmented Chips [ Day ] [ Week ] [ Month ] [ Year ]
+                        Row(
+                          children: ['Day', 'Week', 'Month', 'Year'].map((tf) {
+                            final isSelected = _selectedTimeframe == tf;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: RefocusChip(
+                                label: tf,
+                                isSelected: isSelected,
+                                onTap: () => setState(() => _selectedTimeframe = tf),
                               ),
-                              child: Icon(
-                                session.status.name == 'completed'
-                                    ? Icons.check_rounded
-                                    : Icons.close_rounded,
-                                color: session.status.name == 'completed'
-                                    ? AppColors.primary
-                                    : AppColors.red,
-                                size: 16,
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // 1. Total Focus Time Hero Card
+                        _TotalFocusTimeHeroCard(
+                          summary: summary,
+                          timeframe: _selectedTimeframe,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // 2. Weekly Focus Activity Bar Graph
+                        _WeeklyFocusGraph(
+                          last7Days: summary.last7Days,
+                          dailyGoalMinutes: summary.dailyGoalMinutes,
+                          selectedIndex: _selectedBarIndex,
+                          onBarSelected: (index) {
+                            setState(() {
+                              _selectedBarIndex = _selectedBarIndex == index ? null : index;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        // 3. Sessions & Avg Session Metrics Row
+                        Row(
+                          children: [
+                            Expanded(
+                              child: RefocusStatCard(
+                                title: 'Completed Sessions',
+                                value: '$completedSessions',
+                                subtitle: '${summary.totalInterruptedSessions} canceled',
+                                icon: Icons.check_circle_outline_rounded,
+                                iconColor: AppColors.primary,
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    session.label?.isNotEmpty == true
-                                        ? session.label!
-                                        : 'Focus Session',
-                                    style: const TextStyle(
-                                      color: AppColors.textPrimary,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  Text(
-                                    TimeUtils.formatTime(session.startTime),
-                                    style: const TextStyle(
-                                      color: AppColors.textMuted,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
-                              '${session.durationSeconds ~/ 60} min',
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
+                              child: RefocusStatCard(
+                                title: 'Avg. Session',
+                                value: avgMinutes > 0 ? '${avgMinutes}m' : '—',
+                                subtitle: 'Based on active time',
+                                icon: Icons.av_timer_rounded,
+                                iconColor: AppColors.accentCyan,
                               ),
                             ),
                           ],
                         ),
-                      )),
-                const SizedBox(height: 24),
-              ],
+                        const SizedBox(height: 20),
+
+                        // 4. Peak Focus Time of Day
+                        _HourlyDistributionCard(distribution: summary.hourlyDistribution),
+                        const SizedBox(height: 24),
+
+                        // 5. Subject / Recent Activity Breakdown
+                        RefocusSectionHeader(
+                          title: 'Session Breakdown',
+                          actionText: 'Full History',
+                          onAction: () => context.push('/history'),
+                        ),
+                        const SizedBox(height: 12),
+
+                        if (summary.recentSessions.isEmpty)
+                          const RefocusEmptyState(
+                            icon: Icons.history_toggle_off_rounded,
+                            title: 'No Session Records Yet',
+                            description: 'Complete focus sessions to see your subject breakdown.',
+                          )
+                        else
+                          ...summary.recentSessions.map((session) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: RefocusCard(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 12),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: session.status.name == 'completed'
+                                              ? AppColors.success.withOpacity(0.14)
+                                              : AppColors.danger.withOpacity(0.14),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Icon(
+                                          session.status.name == 'completed'
+                                              ? Icons.check_rounded
+                                              : Icons.close_rounded,
+                                          color: session.status.name == 'completed'
+                                              ? AppColors.success
+                                              : AppColors.danger,
+                                          size: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              session.label?.isNotEmpty == true
+                                                  ? session.label!
+                                                  : 'General Focus',
+                                              style: GoogleFonts.inter(
+                                                color: AppColors.textPrimary,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            Text(
+                                              TimeUtils.formatTime(session.startTime),
+                                              style: GoogleFonts.inter(
+                                                color: AppColors.textMuted,
+                                                fontSize: 11,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Text(
+                                        '${session.durationSeconds ~/ 60} min',
+                                        style: GoogleFonts.inter(
+                                          color: AppColors.textPrimary,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  );
+                },
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
+                error: (err, _) => Center(
+                  child: Text('Error loading stats: $err'),
+                ),
+              ),
             ),
-          );
+          ],
+        ),
+      ),
+      bottomNavigationBar: RefocusBottomNavigation(
+        currentIndex: 3, // Stats tab
+        onTap: (index) {
+          if (index == 0) context.go('/home');
+          if (index == 1) context.go('/focus/setup');
+          if (index == 2) context.go('/study');
+          if (index == 3) context.go('/wellbeing');
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-        error: (err, _) => Center(
-          child: Text('Error loading wellbeing stats: $err'),
-        ),
       ),
     );
   }
 }
 
 // ---------------------------------------------------------
-// Score Hero Card
+// Total Focus Time Hero Card
 // ---------------------------------------------------------
-class _ScoreHeroCard extends StatelessWidget {
+class _TotalFocusTimeHeroCard extends StatelessWidget {
   final WellbeingSummary summary;
+  final String timeframe;
 
-  const _ScoreHeroCard({required this.summary});
+  const _TotalFocusTimeHeroCard({
+    required this.summary,
+    required this.timeframe,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return RefocusCard(
       padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
-        gradient: LinearGradient(
-          colors: [
-            AppColors.surfaceElevated,
-            AppColors.surface,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
+      gradient: AppGradients.cardGradient,
+      hasGlow: true,
       child: Column(
         children: [
           Row(
@@ -255,7 +278,7 @@ class _ScoreHeroCard extends StatelessWidget {
                   painter: _ScoreArcPainter(
                     score: summary.wellbeingScore,
                     color: AppColors.primary,
-                    bgColor: AppColors.borderLight,
+                    bgColor: AppColors.surfaceElevated,
                   ),
                   child: Center(
                     child: Column(
@@ -263,19 +286,19 @@ class _ScoreHeroCard extends StatelessWidget {
                       children: [
                         Text(
                           '${summary.wellbeingScore}',
-                          style: const TextStyle(
+                          style: GoogleFonts.outfit(
                             color: AppColors.textPrimary,
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const Text(
+                        Text(
                           'SCORE',
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             color: AppColors.textMuted,
                             fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.8,
                           ),
                         ),
                       ],
@@ -288,35 +311,28 @@ class _ScoreHeroCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        summary.scoreTitle.toUpperCase(),
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.6,
-                        ),
+                    Text(
+                      'TOTAL FOCUS TIME',
+                      style: GoogleFonts.inter(
+                        color: AppColors.secondary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(
                       TimeUtils.formatDurationMinutes(summary.todayMinutes),
-                      style: const TextStyle(
+                      style: GoogleFonts.outfit(
                         color: AppColors.textPrimary,
-                        fontSize: 22,
+                        fontSize: 26,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      'Today\'s Focus (${(summary.goalProgress * 100).toInt()}% of ${summary.dailyGoalMinutes}m goal)',
-                      style: const TextStyle(
+                      'Goal: ${summary.dailyGoalMinutes}m (${(summary.goalProgress * 100).toInt()}% completed)',
+                      style: GoogleFonts.inter(
                         color: AppColors.textSecondary,
                         fontSize: 12,
                       ),
@@ -333,7 +349,7 @@ class _ScoreHeroCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: summary.goalProgress,
               minHeight: 7,
-              backgroundColor: AppColors.border,
+              backgroundColor: AppColors.surfaceElevated,
               valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
             ),
           ),
@@ -416,7 +432,6 @@ class _WeeklyFocusGraph extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine maximum minutes to scale bars
     final maxRecorded = last7Days.fold<int>(
         dailyGoalMinutes, (prev, elem) => math.max(prev, elem.focusMinutes));
     final chartMax = (maxRecorded * 1.25).ceil();
@@ -425,13 +440,8 @@ class _WeeklyFocusGraph extends StatelessWidget {
         ? last7Days[selectedIndex!]
         : null;
 
-    return Container(
+    return RefocusCard(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -441,21 +451,21 @@ class _WeeklyFocusGraph extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'WEEKLY FOCUS ACTIVITY',
-                    style: TextStyle(
-                      color: AppColors.cyan,
+                  Text(
+                    'WEEKLY ACTIVITY',
+                    style: GoogleFonts.inter(
+                      color: AppColors.secondary,
                       fontSize: 11,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 0.8,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     selectedData != null
-                        ? '${selectedData.dayLabel}: ${TimeUtils.formatDurationMinutes(selectedData.focusMinutes)} (${selectedData.sessionCount} sessions)'
+                        ? '${selectedData.dayLabel}: ${TimeUtils.formatDurationMinutes(selectedData.focusMinutes)}'
                         : 'Tap a bar for details',
-                    style: TextStyle(
+                    style: GoogleFonts.inter(
                       color: selectedData != null
                           ? AppColors.textPrimary
                           : AppColors.textMuted,
@@ -466,8 +476,7 @@ class _WeeklyFocusGraph extends StatelessWidget {
                 ],
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.surfaceElevated,
                   borderRadius: BorderRadius.circular(8),
@@ -484,9 +493,9 @@ class _WeeklyFocusGraph extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    const Text(
+                    Text(
                       'Goal: 90m',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: AppColors.textSecondary,
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
@@ -498,7 +507,6 @@ class _WeeklyFocusGraph extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          // Chart Bars Area
           SizedBox(
             height: 140,
             child: Row(
@@ -518,16 +526,16 @@ class _WeeklyFocusGraph extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          // Bar
                           Expanded(
                             child: Align(
                               alignment: Alignment.bottomCenter,
-                              child: Container(
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
                                 height: 100 * barRatio,
                                 width: double.infinity,
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? AppColors.cyan
+                                      ? AppColors.primaryLight
                                       : day.isToday
                                           ? AppColors.primary
                                           : (day.focusMinutes > 0
@@ -536,30 +544,38 @@ class _WeeklyFocusGraph extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: isSelected
-                                        ? AppColors.cyan
+                                        ? AppColors.primaryLight
                                         : day.isToday
                                             ? AppColors.primary
                                             : AppColors.border,
                                     width: isSelected ? 1.5 : 1.0,
                                   ),
+                                  boxShadow: day.isToday || isSelected
+                                      ? [
+                                          BoxShadow(
+                                            color: AppColors.primary.withOpacity(0.3),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          )
+                                        ]
+                                      : null,
                                 ),
                               ),
                             ),
                           ),
                           const SizedBox(height: 8),
-                          // Day Label
                           Text(
                             day.dayLabel,
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               color: day.isToday
                                   ? AppColors.primary
                                   : isSelected
-                                      ? AppColors.cyan
+                                      ? AppColors.primaryLight
                                       : AppColors.textMuted,
                               fontSize: 11,
                               fontWeight: day.isToday || isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
+                                  ? FontWeight.w700
+                                  : FontWeight.w400,
                             ),
                           ),
                         ],
@@ -577,7 +593,7 @@ class _WeeklyFocusGraph extends StatelessWidget {
 }
 
 // ---------------------------------------------------------
-// Hourly Time of Day Distribution
+// Peak Hourly Time of Day Distribution
 // ---------------------------------------------------------
 class _HourlyDistributionCard extends StatelessWidget {
   final HourlyDistribution distribution;
@@ -588,40 +604,35 @@ class _HourlyDistributionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final total = math.max(1, distribution.totalMinutes);
 
-    return Container(
+    return RefocusCard(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.border),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'PEAK FOCUS TIME OF DAY',
-                style: TextStyle(
-                  color: AppColors.cyan,
+              Text(
+                'PEAK FOCUS TIME',
+                style: GoogleFonts.inter(
+                  color: AppColors.secondary,
                   fontSize: 11,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 0.8,
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.purple.withOpacity(0.12),
+                  color: AppColors.primary.withOpacity(0.14),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   distribution.peakPeriodName,
-                  style: const TextStyle(
-                    color: AppColors.purple,
+                  style: GoogleFonts.inter(
+                    color: AppColors.primaryLight,
                     fontSize: 11,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -639,21 +650,21 @@ class _HourlyDistributionCard extends StatelessWidget {
             label: 'Afternoon (12 PM - 6 PM)',
             minutes: distribution.afternoonMinutes,
             ratio: distribution.afternoonMinutes / total,
-            color: AppColors.cyan,
+            color: AppColors.accentCyan,
           ),
           const SizedBox(height: 10),
           _TimeSlotRow(
             label: 'Evening (6 PM - 12 AM)',
             minutes: distribution.eveningMinutes,
             ratio: distribution.eveningMinutes / total,
-            color: AppColors.purple,
+            color: AppColors.primary,
           ),
           const SizedBox(height: 10),
           _TimeSlotRow(
             label: 'Night (12 AM - 6 AM)',
             minutes: distribution.nightMinutes,
             ratio: distribution.nightMinutes / total,
-            color: AppColors.primary,
+            color: AppColors.secondary,
           ),
         ],
       ),
@@ -684,14 +695,14 @@ class _TimeSlotRow extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: GoogleFonts.inter(
                 color: AppColors.textSecondary,
                 fontSize: 12,
               ),
             ),
             Text(
               TimeUtils.formatDurationMinutes(minutes),
-              style: const TextStyle(
+              style: GoogleFonts.inter(
                 color: AppColors.textPrimary,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -710,78 +721,6 @@ class _TimeSlotRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// ---------------------------------------------------------
-// Reusable Metric Card
-// ---------------------------------------------------------
-class _MetricCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final String subtitle;
-  final IconData icon;
-  final Color accentColor;
-  final bool showArrow;
-
-  const _MetricCard({
-    required this.title,
-    required this.value,
-    required this.subtitle,
-    required this.icon,
-    required this.accentColor,
-    this.showArrow = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(icon, color: accentColor, size: 22),
-              if (showArrow)
-                const Icon(Icons.arrow_forward_ios_rounded,
-                    size: 13, color: AppColors.textMuted),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 10,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

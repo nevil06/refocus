@@ -1,6 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme.dart';
-import '../../../core/constants/durations.dart';
+import '../../../core/widgets/refocus_components.dart';
+
+class DurationOption {
+  final int minutes;
+  final String label;
+
+  const DurationOption({required this.minutes, required this.label});
+}
+
+const List<DurationOption> standardDurations = [
+  DurationOption(minutes: 15, label: '15 min'),
+  DurationOption(minutes: 25, label: '25 min'),
+  DurationOption(minutes: 45, label: '45 min'),
+  DurationOption(minutes: 60, label: '60 min'),
+  DurationOption(minutes: 90, label: '90 min'),
+];
 
 class DurationPicker extends StatelessWidget {
   final int selectedMinutes;
@@ -14,78 +30,34 @@ class DurationPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCustomSelected = !standardDurations.any((d) => d.minutes == selectedMinutes);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'FOCUS DURATION',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.cyan,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.0,
-              ),
+        RefocusSectionHeader(
+          title: 'Duration',
+          accentColor: AppColors.secondary,
         ),
         const SizedBox(height: 12),
         Wrap(
           spacing: 10,
           runSpacing: 10,
           children: [
-            ...presetDurations.map((preset) {
+            ...standardDurations.map((preset) {
               final isSelected = selectedMinutes == preset.minutes;
-              return InkWell(
+              return RefocusChip(
+                label: preset.label,
+                isSelected: isSelected,
+                icon: Icons.timer_outlined,
                 onTap: () => onDurationSelected(preset.minutes),
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: isSelected ? AppColors.primary : AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? AppColors.primary : AppColors.border,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Text(
-                    preset.label,
-                    style: TextStyle(
-                      color: isSelected ? Colors.black : AppColors.textPrimary,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
               );
             }),
-            InkWell(
+            RefocusChip(
+              label: isCustomSelected ? '$selectedMinutes min (Custom)' : 'Custom',
+              isSelected: isCustomSelected,
+              icon: Icons.tune_rounded,
               onTap: () => _showCustomDurationDialog(context),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                decoration: BoxDecoration(
-                  color: !presetDurations.any((p) => p.minutes == selectedMinutes)
-                      ? AppColors.primary
-                      : AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: !presetDurations.any((p) => p.minutes == selectedMinutes)
-                        ? AppColors.primary
-                        : AppColors.border,
-                    width: 1.5,
-                  ),
-                ),
-                child: Text(
-                  !presetDurations.any((p) => p.minutes == selectedMinutes)
-                      ? '${selectedMinutes}m (Custom)'
-                      : 'Custom...',
-                  style: TextStyle(
-                    color: !presetDurations.any((p) => p.minutes == selectedMinutes)
-                        ? Colors.black
-                        : AppColors.textPrimary,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 15,
-                  ),
-                ),
-              ),
             ),
           ],
         ),
@@ -98,14 +70,31 @@ class DurationPicker extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text('Custom Duration'),
+        backgroundColor: AppColors.surfaceElevated,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.border),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.timer_outlined, color: AppColors.primary, size: 22),
+            const SizedBox(width: 10),
+            Text(
+              'Custom Duration',
+              style: GoogleFonts.outfit(
+                color: AppColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
           autofocus: true,
           decoration: const InputDecoration(
-            labelText: 'Minutes',
+            labelText: 'Duration in minutes',
             suffixText: 'min',
           ),
         ),
@@ -114,7 +103,10 @@ class DurationPicker extends StatelessWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
           ),
-          ElevatedButton(
+          RefocusButton(
+            text: 'Set Duration',
+            isFullWidth: false,
+            height: 44,
             onPressed: () {
               final mins = int.tryParse(controller.text);
               if (mins != null && mins > 0 && mins <= 720) {
@@ -122,7 +114,6 @@ class DurationPicker extends StatelessWidget {
                 Navigator.pop(dialogContext);
               }
             },
-            child: const Text('Set'),
           ),
         ],
       ),

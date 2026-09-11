@@ -5,12 +5,14 @@ import '../../../core/providers/core_providers.dart';
 
 class FocusSessionState {
   final FocusSessionModel? activeSession;
+  final FocusSessionModel? lastCompletedSession;
   final bool isLoading;
   final String? errorMessage;
   final bool isScreenPinned;
 
   FocusSessionState({
     this.activeSession,
+    this.lastCompletedSession,
     this.isLoading = false,
     this.errorMessage,
     this.isScreenPinned = false,
@@ -23,6 +25,7 @@ class FocusSessionState {
 
   FocusSessionState copyWith({
     FocusSessionModel? activeSession,
+    FocusSessionModel? lastCompletedSession,
     bool? isLoading,
     String? errorMessage,
     bool? isScreenPinned,
@@ -30,6 +33,7 @@ class FocusSessionState {
   }) {
     return FocusSessionState(
       activeSession: clearActiveSession ? null : (activeSession ?? this.activeSession),
+      lastCompletedSession: lastCompletedSession ?? this.lastCompletedSession,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       isScreenPinned: isScreenPinned ?? this.isScreenPinned,
@@ -197,7 +201,12 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
       await _nativeBridge.stopScreenPinning();
       final finalStatus = isInterrupted ? SessionStatus.interrupted : SessionStatus.cancelled;
       await _database.updateSessionStatus(current.id, finalStatus);
-      state = state.copyWith(isLoading: false, clearActiveSession: true, isScreenPinned: false);
+      state = state.copyWith(
+        isLoading: false,
+        clearActiveSession: true,
+        isScreenPinned: false,
+        lastCompletedSession: current.copyWith(status: finalStatus),
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
@@ -211,8 +220,14 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
     try {
       await _nativeBridge.stopBlocking();
       await _nativeBridge.stopScreenPinning();
+      final completedSession = current.copyWith(status: SessionStatus.completed, completedAt: DateTime.now());
       await _database.updateSessionStatus(current.id, SessionStatus.completed, completedAt: DateTime.now());
-      state = state.copyWith(isLoading: false, clearActiveSession: true, isScreenPinned: false);
+      state = state.copyWith(
+        isLoading: false,
+        clearActiveSession: true,
+        isScreenPinned: false,
+        lastCompletedSession: completedSession,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme.dart';
 import '../../../core/providers/core_providers.dart';
+import '../../../core/widgets/refocus_components.dart';
 import '../providers/onboarding_provider.dart';
 
 class PermissionSetupScreen extends ConsumerStatefulWidget {
@@ -29,7 +31,6 @@ class _PermissionSetupScreenState extends ConsumerState<PermissionSetupScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // Re-verify permissions when returning from settings
       ref.invalidate(permissionStatusProvider);
     }
   }
@@ -40,111 +41,138 @@ class _PermissionSetupScreenState extends ConsumerState<PermissionSetupScreen>
     final permissionService = ref.watch(permissionServiceProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Setup Permissions'),
-      ),
       body: SafeArea(
-        child: permissionsAsync.when(
-          data: (permissions) {
-            final canProceed = permissions.isAccessibilityGranted;
-
-            return ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-              children: [
-                Text(
-                  'To reliably block distracting apps and mute their incoming notifications, Android requires the following permissions.',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                        height: 1.4,
-                      ),
-                ),
-                const SizedBox(height: 20),
-
-                // 1. Accessibility Service Card (Mandatory)
-                _PermissionCard(
-                  title: 'Accessibility Service',
-                  description:
-                      'Detects when a blocked application opens so Refocus can present the focus shield.',
-                  isGranted: permissions.isAccessibilityGranted,
-                  isRequired: true,
-                  onTap: () => permissionService.requestAccessibility(),
-                ),
-                const SizedBox(height: 14),
-
-                // 2. Notification Access Card (Essential)
-                _PermissionCard(
-                  title: 'Notification Access',
-                  description:
-                      'Silences distracting notifications, banners, and sounds from blocked apps during active focus sessions.',
-                  isGranted: permissions.isNotificationListenerGranted,
-                  isRequired: true,
-                  onTap: () => permissionService.requestNotificationAccess(),
-                ),
-                const SizedBox(height: 14),
-
-                // 3. Battery Optimization (Recommended)
-                _PermissionCard(
-                  title: 'Battery Exemption',
-                  description:
-                      'Prevents Android from killing the focus blocker while your screen is locked or idle.',
-                  isGranted: permissions.isBatteryOptimizationIgnored,
-                  isRequired: false,
-                  onTap: () => permissionService.requestBatteryOptimization(),
-                ),
-                const SizedBox(height: 24),
-
-                // Prominent disclosure note
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.border),
+        child: Column(
+          children: [
+            // Top App Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                    onPressed: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/onboarding');
+                      }
+                    },
                   ),
-                  child: Row(
+                  const SizedBox(width: 8),
+                  Text(
+                    'Setup Permissions',
+                    style: GoogleFonts.outfit(
+                      color: AppColors.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Expanded(
+              child: permissionsAsync.when(
+                data: (permissions) {
+                  final canProceed = permissions.isAccessibilityGranted;
+
+                  return ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                     children: [
-                      const Icon(Icons.info_outline_rounded,
-                          color: AppColors.cyan, size: 20),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'We do not read message texts, passwords, or personal content. Only app package identifiers are checked.',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: AppColors.textMuted,
-                              ),
+                      Text(
+                        'To shield you from distracting apps and mute their incoming notifications, Android requires the following setup.',
+                        style: GoogleFonts.inter(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                          height: 1.4,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: canProceed
-                        ? () async {
-                            await ref
-                                .read(onboardingCompletedProvider.notifier)
-                                .completeOnboarding();
-                            if (context.mounted) {
-                              context.go('/home');
-                            }
-                          }
-                        : null,
-                    child: Text(canProceed ? 'Continue to App' : 'Grant Accessibility to Continue'),
-                  ),
+                      // 1. Accessibility Service Card (Mandatory)
+                      _PermissionCard(
+                        title: 'Accessibility Service',
+                        description:
+                            'Detects when a blocked app opens so Refocus can present the focus shield.',
+                        isGranted: permissions.isAccessibilityGranted,
+                        isRequired: true,
+                        onTap: () => permissionService.requestAccessibility(),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // 2. Notification Access Card (Essential)
+                      _PermissionCard(
+                        title: 'Notification Access',
+                        description:
+                            'Silences distracting notifications, banners, and sounds from blocked apps during active focus.',
+                        isGranted: permissions.isNotificationListenerGranted,
+                        isRequired: true,
+                        onTap: () => permissionService.requestNotificationAccess(),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // 3. Battery Optimization (Recommended)
+                      _PermissionCard(
+                        title: 'Battery Exemption',
+                        description:
+                            'Prevents Android from killing the focus blocker while your screen is locked or idle.',
+                        isGranted: permissions.isBatteryOptimizationIgnored,
+                        isRequired: false,
+                        onTap: () => permissionService.requestBatteryOptimization(),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Disclosure Note Card
+                      RefocusCard(
+                        padding: const EdgeInsets.all(14),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.lock_outline_rounded,
+                                color: AppColors.primary, size: 20),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Refocus does not read message texts, passwords, or personal content. Only app package identifiers are checked locally.',
+                                style: GoogleFonts.inter(
+                                  color: AppColors.textMuted,
+                                  fontSize: 12,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+
+                      RefocusButton(
+                        text: canProceed ? 'Continue to Refocus' : 'Grant Accessibility to Continue',
+                        icon: canProceed ? Icons.arrow_forward_rounded : Icons.lock_open_rounded,
+                        onPressed: canProceed
+                            ? () async {
+                                await ref
+                                    .read(onboardingCompletedProvider.notifier)
+                                    .completeOnboarding();
+                                if (context.mounted) {
+                                  context.go('/home');
+                                }
+                              }
+                            : null,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  );
+                },
+                loading: () => const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 ),
-                const SizedBox(height: 16),
-              ],
-            );
-          },
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
-          ),
-          error: (err, _) => Center(
-            child: Text('Error loading permissions: $err'),
-          ),
+                error: (err, _) => Center(
+                  child: Text('Error loading permissions: $err'),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -168,15 +196,11 @@ class _PermissionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return RefocusCard(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isGranted ? AppColors.primary.withOpacity(0.4) : AppColors.border,
-          width: isGranted ? 1.5 : 1,
-        ),
+      border: Border.all(
+        color: isGranted ? AppColors.primary.withOpacity(0.4) : AppColors.border,
+        width: isGranted ? 1.5 : 1,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,10 +213,11 @@ class _PermissionCard extends StatelessWidget {
                     Flexible(
                       child: Text(
                         title,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: AppColors.textPrimary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style: GoogleFonts.inter(
+                          color: AppColors.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     if (isRequired) ...[
@@ -200,15 +225,15 @@ class _PermissionCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.15),
+                          color: AppColors.primary.withOpacity(0.16),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text(
+                        child: Text(
                           'REQUIRED',
-                          style: TextStyle(
-                            color: AppColors.primary,
+                          style: GoogleFonts.inter(
+                            color: AppColors.primaryLight,
                             fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -225,26 +250,27 @@ class _PermissionCard extends StatelessWidget {
                     color: AppColors.primary,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.check, size: 16, color: Colors.black),
+                  child: const Icon(Icons.check, size: 16, color: Colors.white),
                 )
               else
-                OutlinedButton(
+                RefocusButton(
+                  text: 'Enable',
+                  variant: RefocusButtonVariant.secondary,
+                  isFullWidth: false,
+                  height: 36,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   onPressed: onTap,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    minimumSize: Size.zero,
-                  ),
-                  child: const Text('Enable', style: TextStyle(fontSize: 13)),
                 ),
             ],
           ),
           const SizedBox(height: 10),
           Text(
             description,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.4,
-                ),
+            style: GoogleFonts.inter(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              height: 1.4,
+            ),
           ),
         ],
       ),

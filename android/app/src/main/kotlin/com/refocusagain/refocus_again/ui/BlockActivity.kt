@@ -40,7 +40,7 @@ class BlockActivity : Activity() {
         btnBackToFocus = findViewById(R.id.btnBackToFocus)
 
         val appName = intent.getStringExtra(EXTRA_BLOCKED_APP_NAME) ?: "This application"
-        tvBlockedAppName.text = "$appName is blocked until your focus session is complete."
+        tvBlockedAppName.text = "$appName is blocked during your focus session."
 
         btnBackToFocus.setOnClickListener {
             val mainIntent = Intent(this, MainActivity::class.java).apply {
@@ -57,7 +57,7 @@ class BlockActivity : Activity() {
         super.onNewIntent(intent)
         setIntent(intent)
         val appName = intent?.getStringExtra(EXTRA_BLOCKED_APP_NAME) ?: "This application"
-        tvBlockedAppName.text = "$appName is blocked until your focus session is complete."
+        tvBlockedAppName.text = "$appName is blocked during your focus session."
         updateRemainingTime()
     }
 

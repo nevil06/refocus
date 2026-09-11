@@ -1,8 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:refocus_again/app/theme.dart';
 import 'package:refocus_again/core/models/focus_session.dart';
 import 'package:refocus_again/core/models/installed_app.dart';
 import 'package:refocus_again/core/services/permission_service.dart';
 import 'package:refocus_again/core/utils/time_utils.dart';
+import 'package:refocus_again/core/widgets/refocus_components.dart';
+import 'package:refocus_again/features/study/screens/youtube_study_screen.dart';
 
 void main() {
   group('TimeUtils Tests', () {
@@ -114,6 +118,59 @@ void main() {
       expect(state.isDeviceAdminActive, true);
       expect(state.isScreenPinningEnabled, true);
       expect(state.isCorePermissionGranted, true);
+    });
+  });
+
+  group('Premium Dark Theme & Component Tests', () {
+    test('AppColors verify violet / obsidian dark tokens', () {
+      expect(AppColors.background, const Color(0xFF08090E));
+      expect(AppColors.primary, const Color(0xFF8B5CF6));
+      expect(AppColors.secondary, const Color(0xFFC4B5FD));
+      expect(AppColors.surface, const Color(0xFF141724));
+    });
+
+    testWidgets('RefocusButton renders with text and triggers callback', (tester) async {
+      bool tapped = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: Scaffold(
+            body: RefocusButton(
+              text: 'Start Focus',
+              onPressed: () => tapped = true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Start Focus'), findsOneWidget);
+      await tester.tap(find.text('Start Focus'));
+      expect(tapped, true);
+    });
+
+    testWidgets('RefocusProgressRing renders time text and subtitle', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const Scaffold(
+            body: RefocusProgressRing(
+              progress: 0.6,
+              timeText: '24:17',
+              subtitle: '25m planned',
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('24:17'), findsOneWidget);
+      expect(find.text('25m planned'), findsOneWidget);
+    });
+
+    test('StudyVideoItem catalog contains valid educational videos', () {
+      expect(studyVideos.isNotEmpty, true);
+      expect(studyVideos.any((v) => v.category == 'Physics'), true);
+      expect(studyVideos.any((v) => v.category == 'Math'), true);
+      expect(studyVideos.any((v) => v.category == 'CS'), true);
     });
   });
 }

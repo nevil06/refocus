@@ -5,66 +5,64 @@
     android:orientation="vertical"
     android:gravity="center"
     android:background="@color/bg_dark"
-    android:padding="32dp">
+    android:paddingStart="32dp"
+    android:paddingEnd="32dp"
+    android:paddingTop="48dp"
+    android:paddingBottom="48dp">
 
+    <!-- Top Branding -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="REFOCUS"
-        android:textColor="@color/accent_teal"
-        android:textSize="14sp"
+        android:textColor="@color/accent_lavender"
+        android:textSize="13sp"
         android:textStyle="bold"
-        android:letterSpacing="0.15"
-        android:layout_marginBottom="40dp" />
+        android:letterSpacing="0.2"
+        android:layout_marginBottom="32dp" />
 
+    <!-- Lock Icon -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="🔒"
-        android:textSize="56sp"
-        android:layout_marginBottom="24dp" />
+        android:textSize="54sp"
+        android:layout_marginBottom="20dp" />
 
+    <!-- Header Text -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Stay Focused"
+        android:text="Stay Focused!"
         android:textColor="@color/text_primary"
         android:textSize="26sp"
         android:textStyle="bold"
-        android:layout_marginBottom="12dp" />
+        android:layout_marginBottom="10dp" />
 
+    <!-- Blocked App Message -->
     <TextView
         android:id="@+id/tvBlockedAppName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="This application is blocked"
+        android:text="This app is blocked during your focus session."
         android:textColor="@color/text_secondary"
-        android:textSize="16sp"
+        android:textSize="15sp"
         android:gravity="center"
         android:lineSpacingMultiplier="1.2"
-        android:layout_marginBottom="32dp" />
+        android:layout_marginBottom="36dp" />
 
+    <!-- Time Remaining Card -->
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
         android:background="@color/bg_card"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        android:layout_marginBottom="48dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="TIME REMAINING"
-            android:textColor="@color/accent_cyan"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.1"
-            android:layout_marginBottom="6dp" />
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="20dp"
+        android:layout_marginBottom="40dp">
 
         <TextView
             android:id="@+id/tvRemainingTime"
@@ -72,20 +70,35 @@
             android:layout_height="wrap_content"
             android:text="--:--"
             android:textColor="@color/text_primary"
-            android:textSize="32sp"
+            android:textSize="36sp"
             android:textStyle="bold"
-            android:fontFamily="monospace" />
+            android:fontFamily="monospace"
+            android:letterSpacing="-0.02" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Time remaining"
+            android:textColor="@color/text_muted"
+            android:textSize="12sp"
+            android:layout_marginTop="6dp" />
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Back to Focus CTA -->
     <Button
         android:id="@+id/btnBackToFocus"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="Back to Focus"
+        android:layout_height="54dp"
+        android:text="← Back to Focus"
         android:textAllCaps="false"
-        android:textSize="16sp"
+        android:textSize="15sp"
         android:textStyle="bold"
         android:textColor="@color/button_text"
-        android:backgroundTint="@color/accent_teal" />
+        android:backgroundTint="@color/accent_violet" />
 
 </LinearLayout>

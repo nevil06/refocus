@@ -378,7 +378,7 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
             putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
             putExtra(
                 DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-                "Prevents Refocus Again from being uninstalled during locked focus sessions to help you maintain commitment."
+                "Prevents Refocus from being uninstalled during locked focus sessions to help you maintain commitment."
             )
             if (activity == null) {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK

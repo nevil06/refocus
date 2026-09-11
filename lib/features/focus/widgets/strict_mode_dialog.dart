@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme.dart';
+import '../../../core/widgets/refocus_components.dart';
 
 class StrictModeStopDialog extends StatefulWidget {
   final bool isStrictMode;
@@ -42,7 +44,7 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
     if (widget.isStrictMode) {
       _timer = Timer.periodic(const Duration(seconds: 1), (t) {
         if (_countdown > 0) {
-          setState(() => _countdown--);
+          if (mounted) setState(() => _countdown--);
         } else {
           t.cancel();
         }
@@ -61,24 +63,41 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
   Widget build(BuildContext context) {
     if (!widget.isStrictMode) {
       return AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: const Text('Stop Focus Session?'),
-        content: const Text(
-          'Your session will be marked as interrupted and blocked apps will be unlocked.',
-          style: TextStyle(color: AppColors.textSecondary),
+        backgroundColor: AppColors.surfaceElevated,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.border),
+        ),
+        title: Text(
+          'End Focus Session?',
+          style: GoogleFonts.outfit(
+            color: AppColors.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          'Your session will be marked as interrupted and shielded apps will be unlocked.',
+          style: GoogleFonts.inter(
+            color: AppColors.textSecondary,
+            fontSize: 13,
+            height: 1.4,
+          ),
         ),
         actions: [
-          OutlinedButton(
+          TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Continue Focus'),
+            child: const Text('Stay Focused', style: TextStyle(color: AppColors.textSecondary)),
           ),
-          ElevatedButton(
+          RefocusButton(
+            text: 'Stop Session',
+            variant: RefocusButtonVariant.danger,
+            isFullWidth: false,
+            height: 42,
             onPressed: () {
               Navigator.pop(context);
               widget.onConfirmStop();
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.red),
-            child: const Text('Stop Session'),
           ),
         ],
       );
@@ -88,26 +107,52 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
     final canStop = _countdown == 0 && isWordConfirmed;
 
     return AlertDialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: AppColors.surfaceElevated,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: AppColors.border),
+      ),
       title: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: AppColors.amber, size: 28),
-          const SizedBox(width: 10),
-          const Text('Strict Mode Active'),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.amber.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.lock_clock_rounded, color: AppColors.amber, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Friction Mode Active',
+            style: GoogleFonts.outfit(
+              color: AppColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'You enabled Strict Mode to protect your focus. Stopping will mark this session interrupted.',
-            style: TextStyle(color: AppColors.textSecondary, height: 1.4),
+          Text(
+            'You enabled Friction Mode to protect your deep focus. Early cancellation requires confirmation.',
+            style: GoogleFonts.inter(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Type "STOP" below to confirm:',
-            style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 13),
+          Text(
+            'Type "STOP" to confirm:',
+            style: GoogleFonts.inter(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+            ),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -121,29 +166,32 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
           if (_countdown > 0) ...[
             const SizedBox(height: 12),
             Text(
-              'Please wait $_countdown seconds to reconsider...',
-              style: const TextStyle(color: AppColors.amber, fontSize: 12),
+              'Please pause for $_countdown seconds to reconsider...',
+              style: GoogleFonts.inter(
+                color: AppColors.amber,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ],
       ),
       actions: [
-        OutlinedButton(
+        TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Stay in Focus'),
+          child: const Text('Stay Focused', style: TextStyle(color: AppColors.textSecondary)),
         ),
-        ElevatedButton(
+        RefocusButton(
+          text: 'Give Up & Stop',
+          variant: RefocusButtonVariant.danger,
+          isFullWidth: false,
+          height: 42,
           onPressed: canStop
               ? () {
                   Navigator.pop(context);
                   widget.onConfirmStop();
                 }
               : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.red,
-            disabledBackgroundColor: AppColors.red.withOpacity(0.3),
-          ),
-          child: const Text('Give Up & Stop'),
         ),
       ],
     );

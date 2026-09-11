@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#090A0F</color>
-    <color name="bg_dark">#090A0F</color>
-    <color name="bg_card">#12151E</color>
-    <color name="accent_teal">#00E699</color>
+    <color name="ic_launcher_background">#08090E</color>
+    <color name="bg_dark">#08090E</color>
+    <color name="bg_card">#141724</color>
+    <color name="bg_card_elevated">#1B2032</color>
+    <color name="accent_violet">#8B5CF6</color>
+    <color name="accent_purple">#8B5CF6</color>
+    <color name="accent_lavender">#C4B5FD</color>
+    <color name="accent_teal">#8B5CF6</color>
     <color name="accent_cyan">#38BDF8</color>
     <color name="text_primary">#F8FAFC</color>
     <color name="text_secondary">#94A3B8</color>
     <color name="text_muted">#64748B</color>
-    <color name="button_text">#090A0F</color>
+    <color name="button_text">#FFFFFF</color>
 </resources>
