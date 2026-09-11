@@ -191,9 +191,12 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
     }
   }
 
+  bool _isProcessing = false;
+
   Future<void> stopSession({required bool isInterrupted}) async {
     final current = state.activeSession;
-    if (current == null) return;
+    if (current == null || _isProcessing) return;
+    _isProcessing = true;
 
     state = state.copyWith(isLoading: true);
     try {
@@ -209,12 +212,15 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    } finally {
+      _isProcessing = false;
     }
   }
 
   Future<void> completeSession() async {
     final current = state.activeSession;
-    if (current == null) return;
+    if (current == null || _isProcessing) return;
+    _isProcessing = true;
 
     state = state.copyWith(isLoading: true);
     try {
@@ -230,6 +236,8 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
       );
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
+    } finally {
+      _isProcessing = false;
     }
   }
 }

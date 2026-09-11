@@ -75,6 +75,7 @@ class BlockActivity : Activity() {
         val remainingMillis = SessionStateManager.getRemainingMillis(this)
         if (remainingMillis <= 0) {
             // Focus session finished
+            handler.removeCallbacks(updateTimerRunnable)
             finish()
             return
         }

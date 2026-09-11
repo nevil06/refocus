@@ -66,13 +66,13 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
     final focusNotifier = ref.read(focusSessionProvider.notifier);
 
     // Auto navigate when session completes
-    if (timerState.isCompleted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+    ref.listen<TimerState>(timerProvider, (previous, next) {
+      if (next.isCompleted && (previous == null || !previous.isCompleted)) {
         if (context.mounted) {
           context.go('/focus/complete');
         }
-      });
-    }
+      }
+    });
 
     final activeSession = sessionState.activeSession;
     if (activeSession == null) {
