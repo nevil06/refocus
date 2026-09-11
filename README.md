@@ -4,7 +4,7 @@
   <img src="assets/images/logo.png" alt="Refocus Logo" width="160" />
 </p>
 
-> A production-quality, privacy-first Android focus and productivity application that reliably locks distracting apps, mutes disruptive notifications, and pins your device during deep study sessions
+> A production-quality, privacy-first Android focus and productivity application that reliably locks distracting apps, mutes disruptive notifications, and pins your device during deep study sessions.
 
 ---
 
@@ -34,7 +34,7 @@
 - Integrated directly into the onboarding setup and configurable from Settings.
 
 ### 📌 Screen Pinning (Full-Phone Focus Lock)
-- **Per-Session Commitment Choice**: Opt to lock your phone strictly to Refocus Again for the duration of the session via Android's native Lock Task Mode (`startLockTask()`).
+- **Per-Session Commitment Choice**: Opt to lock your phone strictly to Refocus for the duration of the session via Android's native Lock Task Mode (`startLockTask()`).
 - **Home & Recents Restricted**: Disables the home button, recents overview, and status bar pull-down to eliminate reflex phone checks.
 - **Safety Valve Intact**: Fully preserves Android's standard physical exit gesture (holding Back + Overview / swipe up & hold) to ensure emergency access at all times; gesture unpinning is gracefully logged as an interrupted session.
 - **Automatic Release**: Automatically unpins the device upon natural session completion.
@@ -42,7 +42,7 @@
 ### 🛡️ Uninstall Protection (Device Admin)
 - **Anti-Bypass Commitment**: Prevents compulsive uninstallation of the app mid-session via standard Android `DevicePolicyManager` and `DeviceAdminReceiver`.
 - **One-Time Consent**: Transparent opt-in with a pre-consent explainer dialog before opening Android's system `ACTION_ADD_DEVICE_ADMIN` screen.
-- **Zero Anti-Removal Abuse**: Standard Android system deactivation (*Settings → Security → Device Admin apps → Refocus Again → Deactivate*) remains 100% accessible and untouched at all times.
+- **Zero Anti-Removal Abuse**: Standard Android system deactivation (*Settings → Security → Device Admin apps → Refocus → Deactivate*) remains 100% accessible and untouched at all times.
 
 ### ⏱️ Timestamp-Based Focus Timer & 3-Tier Strict Mode
 - Calculates remaining time dynamically using timestamps (`plannedEndTime - currentTimeMillis()`), eliminating timer drift when the screen is locked or the device sleeps.
