@@ -4,7 +4,7 @@
   <img src="assets/images/logo.png" alt="Refocus Logo" width="160" />
 </p>
 
-> A production-quality, privacy-first Android focus and productivity application that reliably locks distracting apps, mutes disruptive notifications, and pins your device during deep study sessions.
+> A production-quality, privacy-first Android focus and productivity application that reliably locks distracting apps, mutes disruptive notifications, and pins your device during deep study sessions
 
 ---
 
