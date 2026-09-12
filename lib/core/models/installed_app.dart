@@ -37,13 +37,22 @@ class InstalledApp {
 
     final rawIconBytes = map['iconBytes'];
     if (rawIconBytes is Uint8List) {
-      parsedBytes = rawIconBytes;
+      parsedBytes = Uint8List.fromList(rawIconBytes);
     } else if (rawIconBytes is List<int>) {
       parsedBytes = Uint8List.fromList(rawIconBytes);
     } else if (rawIconBytes is List<dynamic>) {
       try {
         parsedBytes = Uint8List.fromList(rawIconBytes.cast<int>());
       } catch (_) {}
+    } else if (rawIconBytes is ByteBuffer) {
+      parsedBytes = Uint8List.fromList(rawIconBytes.asUint8List());
+    } else if (rawIconBytes is TypedData) {
+      parsedBytes = Uint8List.fromList(
+        rawIconBytes.buffer.asUint8List(
+          rawIconBytes.offsetInBytes,
+          rawIconBytes.lengthInBytes,
+        ),
+      );
     }
 
     final b64 = map['iconBase64'] as String? ?? '';

@@ -17,7 +17,7 @@ import java.io.ByteArrayOutputStream
 
 object InstalledAppsProvider {
     private const val TAG = "InstalledAppsProvider"
-    private const val ICON_SIZE_PX = 128
+    private const val ICON_SIZE_PX = 96
 
     // Memory cache for icon byte arrays (stores up to 300 app icons)
     private val iconCache = object : LruCache<String, ByteArray>(300) {}
@@ -50,35 +50,56 @@ object InstalledAppsProvider {
 
     private fun drawableToByteArray(drawable: Drawable?, size: Int = ICON_SIZE_PX): ByteArray? {
         if (drawable == null) return null
+        var bitmap: Bitmap? = null
         return try {
-            val bitmap = when {
-                drawable is BitmapDrawable && drawable.bitmap != null -> {
-                    val original = drawable.bitmap
-                    if (original.width <= size && original.height <= size && !original.isRecycled) {
-                        original
-                    } else {
-                        Bitmap.createScaledBitmap(original, size, size, true)
-                    }
+            if (drawable is BitmapDrawable && drawable.bitmap != null && !drawable.bitmap.isRecycled) {
+                val original = drawable.bitmap
+                // If it's a hardware bitmap, copy to software ARGB_8888
+                val softwareBitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && original.config == Bitmap.Config.HARDWARE) {
+                    original.copy(Bitmap.Config.ARGB_8888, false)
+                } else {
+                    original
                 }
-                else -> {
-                    val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else size
-                    val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else size
-                    val targetW = if (width > size) size else width
-                    val targetH = if (height > size) size else height
-                    val bitmap = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888)
-                    val canvas = Canvas(bitmap)
-                    drawable.setBounds(0, 0, canvas.width, canvas.height)
-                    drawable.draw(canvas)
-                    bitmap
+
+                if (softwareBitmap != null) {
+                    bitmap = if (softwareBitmap.width == size && softwareBitmap.height == size) {
+                        if (softwareBitmap == original) softwareBitmap.copy(Bitmap.Config.ARGB_8888, false) else softwareBitmap
+                    } else {
+                        Bitmap.createScaledBitmap(softwareBitmap, size, size, true)
+                    }
                 }
             }
 
+            // For AdaptiveIconDrawable, VectorDrawable, LayerDrawable, or if bitmap is still null
+            if (bitmap == null) {
+                val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bmp)
+                try {
+                    drawable.setBounds(0, 0, size, size)
+                    drawable.draw(canvas)
+                    bitmap = bmp
+                } catch (drawEx: Exception) {
+                    Log.w(TAG, "Direct draw failed: ${drawEx.message}")
+                    bmp.recycle()
+                    bitmap = null
+                }
+            }
+
+            if (bitmap == null) return null
+
             val stream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
-            stream.toByteArray()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            val bytes = stream.toByteArray()
+            bytes
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to convert drawable to byte array: ${e.message}")
+            Log.w(TAG, "Failed to convert drawable to byte array: ${e.message}", e)
             null
+        } finally {
+            try {
+                if (bitmap != null && bitmap != (drawable as? BitmapDrawable)?.bitmap) {
+                    bitmap.recycle()
+                }
+            } catch (_: Exception) {}
         }
     }
 
@@ -86,7 +107,15 @@ object InstalledAppsProvider {
         iconCache.get(packageName)?.let { return it }
 
         val bytes = try {
-            val drawable = drawableSupplier?.invoke() ?: pm.getApplicationIcon(packageName)
+            val drawable = try {
+                drawableSupplier?.invoke()
+            } catch (_: Exception) {
+                null
+            } ?: try {
+                pm.getApplicationIcon(packageName)
+            } catch (_: Exception) {
+                null
+            }
             drawableToByteArray(drawable)
         } catch (_: Exception) {
             null
@@ -113,17 +142,11 @@ object InstalledAppsProvider {
                 addCategory(Intent.CATEGORY_LAUNCHER)
             }
 
-            val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                PackageManager.MATCH_ALL
-            } else {
-                0
-            }
-
             val resolveInfos = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                pm.queryIntentActivities(mainIntent, PackageManager.ResolveInfoFlags.of(flags.toLong()))
+                pm.queryIntentActivities(mainIntent, PackageManager.ResolveInfoFlags.of(0))
             } else {
                 @Suppress("DEPRECATION")
-                pm.queryIntentActivities(mainIntent, flags)
+                pm.queryIntentActivities(mainIntent, 0)
             }
 
             for (resolveInfo in resolveInfos) {
@@ -141,7 +164,11 @@ object InstalledAppsProvider {
                     try {
                         resolveInfo.loadIcon(pm)
                     } catch (_: Exception) {
-                        null
+                        try {
+                            resolveInfo.activityInfo?.loadIcon(pm)
+                        } catch (_: Exception) {
+                            null
+                        }
                     }
                 }
 
@@ -155,10 +182,10 @@ object InstalledAppsProvider {
                 )
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error in queryIntentActivities: ${e.message}")
+            Log.e(TAG, "Error in queryIntentActivities: ${e.message}", e)
         }
 
-        // 2. Discover via Installed Applications
+        // 2. Discover via Installed Applications (non-system user-installed apps)
         try {
             val installedApps = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 pm.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(0))
@@ -172,9 +199,7 @@ object InstalledAppsProvider {
                 if (seenPackages.contains(pkg)) continue
 
                 val isSystemApp = (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                val hasLaunchIntent = pm.getLaunchIntentForPackage(pkg) != null
-
-                if (hasLaunchIntent || !isSystemApp) {
+                if (!isSystemApp) {
                     seenPackages.add(pkg)
 
                     val name = try {
@@ -202,7 +227,7 @@ object InstalledAppsProvider {
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error in getInstalledApplications: ${e.message}")
+            Log.e(TAG, "Error in getInstalledApplications: ${e.message}", e)
         }
 
         // 3. Fallback: Always ensure top popular distracting apps are in the list

@@ -58,7 +58,10 @@ class AppListTile extends StatelessWidget {
                         fit: BoxFit.cover,
                         gaplessPlayback: true,
                         filterQuality: FilterQuality.medium,
-                        errorBuilder: (context, error, stackTrace) => _buildFallbackIcon(),
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint('Image.memory error for ${app.packageName}: $error');
+                          return _buildFallbackIcon();
+                        },
                       )
                     : _buildFallbackIcon(),
               ),
@@ -130,17 +133,32 @@ class AppListTile extends StatelessWidget {
   }
 
   Widget _buildFallbackIcon() {
+    final initial = app.appName.trim().isNotEmpty
+        ? app.appName.trim().characters.first.toUpperCase()
+        : '';
+
     return Container(
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: AppColors.surfaceHover,
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(11),
       ),
-      child: const Icon(
-        Icons.android_rounded,
-        color: AppColors.textSecondary,
-        size: 24,
+      child: Center(
+        child: initial.isNotEmpty
+            ? Text(
+                initial,
+                style: GoogleFonts.outfit(
+                  color: AppColors.accentLavender,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              )
+            : const Icon(
+                Icons.android_rounded,
+                color: AppColors.textSecondary,
+                size: 22,
+              ),
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../constants/app_constants.dart';
 import '../models/installed_app.dart';
@@ -29,7 +30,8 @@ class NativeBridgeService {
           .whereType<Map<dynamic, dynamic>>()
           .map((item) => InstalledApp.fromMap(item))
           .toList();
-    } catch (_) {
+    } catch (e, stack) {
+      debugPrint('NativeBridgeService.getInstalledApps error: $e\n$stack');
       return [];
     }
   }
