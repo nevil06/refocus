@@ -6,6 +6,10 @@
 -keep class io.flutter.** { *; }
 -keep class io.flutter.plugins.**  { *; }
 
+# Flutter Play Store Split / Deferred Components (suppress missing Play Core references)
+-dontwarn com.google.android.play.core.**
+-dontwarn io.flutter.embedding.engine.deferredcomponents.**
+
 # Keep Refocus native service and receiver components
 -keep class com.refocusagain.refocus_again.service.** { *; }
 -keep class com.refocusagain.refocus_again.receiver.** { *; }
