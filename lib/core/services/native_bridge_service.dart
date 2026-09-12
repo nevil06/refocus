@@ -43,6 +43,7 @@ class NativeBridgeService {
     required bool isStrict,
     int? strictModeType,
     String? label,
+    bool uninstallProtected = false,
   }) async {
     try {
       final bool? result = await _channel.invokeMethod<bool>('startBlocking', {
@@ -54,6 +55,7 @@ class NativeBridgeService {
         'isStrict': isStrict,
         'strictModeType': strictModeType ?? (isStrict ? 1 : 0),
         'label': label ?? '',
+        'uninstallProtected': uninstallProtected,
       });
       return result ?? false;
     } catch (_) {
@@ -228,5 +230,33 @@ class NativeBridgeService {
     try {
       await _channel.invokeMethod('openDeviceAdminSettings');
     } catch (_) {}
+  }
+
+  // Session-Scoped Uninstall Protection
+  Future<bool> enableUninstallProtection() async {
+    try {
+      final bool? result = await _channel.invokeMethod<bool>('enableUninstallProtection');
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> disableUninstallProtection() async {
+    try {
+      final bool? result = await _channel.invokeMethod<bool>('disableUninstallProtection');
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> removeDeviceAdmin() async {
+    try {
+      final bool? result = await _channel.invokeMethod<bool>('removeDeviceAdmin');
+      return result ?? false;
+    } catch (_) {
+      return false;
+    }
   }
 }

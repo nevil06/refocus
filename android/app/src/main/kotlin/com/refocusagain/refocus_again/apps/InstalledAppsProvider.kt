@@ -4,13 +4,23 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.Log
+import android.util.LruCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 
 object InstalledAppsProvider {
     private const val TAG = "InstalledAppsProvider"
+    private const val ICON_SIZE_PX = 128
+
+    // Memory cache for icon byte arrays (stores up to 300 app icons)
+    private val iconCache = object : LruCache<String, ByteArray>(300) {}
 
     // Top distracting apps catalog
     private val POPULAR_APPS = listOf(
@@ -38,9 +48,59 @@ object InstalledAppsProvider {
         Pair("PUBG Mobile", "com.tencent.ig")
     )
 
-    suspend fun getInstalledApps(context: Context): List<Map<String, String>> = withContext(Dispatchers.IO) {
+    private fun drawableToByteArray(drawable: Drawable?, size: Int = ICON_SIZE_PX): ByteArray? {
+        if (drawable == null) return null
+        return try {
+            val bitmap = when {
+                drawable is BitmapDrawable && drawable.bitmap != null -> {
+                    val original = drawable.bitmap
+                    if (original.width <= size && original.height <= size && !original.isRecycled) {
+                        original
+                    } else {
+                        Bitmap.createScaledBitmap(original, size, size, true)
+                    }
+                }
+                else -> {
+                    val width = if (drawable.intrinsicWidth > 0) drawable.intrinsicWidth else size
+                    val height = if (drawable.intrinsicHeight > 0) drawable.intrinsicHeight else size
+                    val targetW = if (width > size) size else width
+                    val targetH = if (height > size) size else height
+                    val bitmap = Bitmap.createBitmap(targetW, targetH, Bitmap.Config.ARGB_8888)
+                    val canvas = Canvas(bitmap)
+                    drawable.setBounds(0, 0, canvas.width, canvas.height)
+                    drawable.draw(canvas)
+                    bitmap
+                }
+            }
+
+            val stream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 90, stream)
+            stream.toByteArray()
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to convert drawable to byte array: ${e.message}")
+            null
+        }
+    }
+
+    private fun getIconBytes(pm: PackageManager, packageName: String, drawableSupplier: (() -> Drawable?)? = null): ByteArray? {
+        iconCache.get(packageName)?.let { return it }
+
+        val bytes = try {
+            val drawable = drawableSupplier?.invoke() ?: pm.getApplicationIcon(packageName)
+            drawableToByteArray(drawable)
+        } catch (_: Exception) {
+            null
+        }
+
+        if (bytes != null) {
+            iconCache.put(packageName, bytes)
+        }
+        return bytes
+    }
+
+    suspend fun getInstalledApps(context: Context): List<Map<String, Any?>> = withContext(Dispatchers.IO) {
         val pm = context.packageManager
-        val appList = mutableListOf<Map<String, String>>()
+        val appList = mutableListOf<Map<String, Any?>>()
         val seenPackages = mutableSetOf<String>()
 
         // Exclude Refocus itself
@@ -77,10 +137,19 @@ object InstalledAppsProvider {
                     pkg
                 }
 
+                val iconBytes = getIconBytes(pm, pkg) {
+                    try {
+                        resolveInfo.loadIcon(pm)
+                    } catch (_: Exception) {
+                        null
+                    }
+                }
+
                 appList.add(
                     mapOf(
                         "appName" to name,
                         "packageName" to pkg,
+                        "iconBytes" to iconBytes,
                         "iconBase64" to ""
                     )
                 )
@@ -114,10 +183,19 @@ object InstalledAppsProvider {
                         pkg
                     }
 
+                    val iconBytes = getIconBytes(pm, pkg) {
+                        try {
+                            pm.getApplicationIcon(appInfo)
+                        } catch (_: Exception) {
+                            null
+                        }
+                    }
+
                     appList.add(
                         mapOf(
                             "appName" to name,
                             "packageName" to pkg,
+                            "iconBytes" to iconBytes,
                             "iconBase64" to ""
                         )
                     )
@@ -131,17 +209,20 @@ object InstalledAppsProvider {
         for ((name, pkg) in POPULAR_APPS) {
             if (!seenPackages.contains(pkg)) {
                 seenPackages.add(pkg)
+                val iconBytes = getIconBytes(pm, pkg)
+
                 appList.add(
                     mapOf(
                         "appName" to name,
                         "packageName" to pkg,
+                        "iconBytes" to iconBytes,
                         "iconBase64" to ""
                     )
                 )
             }
         }
 
-        appList.sortBy { it["appName"]?.lowercase() ?: "" }
+        appList.sortBy { (it["appName"] as? String)?.lowercase() ?: "" }
         appList
     }
 }

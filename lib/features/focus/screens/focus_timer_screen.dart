@@ -158,6 +158,33 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
+                        if (sessionState.isUninstallProtected) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.primary.withOpacity(0.4)),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.lock_rounded, size: 12, color: AppColors.primary),
+                                SizedBox(width: 4),
+                                Text(
+                                  'PROTECTED',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
                         if (sessionState.isScreenPinned) ...[
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

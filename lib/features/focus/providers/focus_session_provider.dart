@@ -9,6 +9,8 @@ class FocusSessionState {
   final bool isLoading;
   final String? errorMessage;
   final bool isScreenPinned;
+  final bool isUninstallProtected;
+  final bool wasLastSessionProtected;
 
   FocusSessionState({
     this.activeSession,
@@ -16,6 +18,8 @@ class FocusSessionState {
     this.isLoading = false,
     this.errorMessage,
     this.isScreenPinned = false,
+    this.isUninstallProtected = false,
+    this.wasLastSessionProtected = false,
   });
 
   bool get isSessionActive =>
@@ -29,6 +33,8 @@ class FocusSessionState {
     bool? isLoading,
     String? errorMessage,
     bool? isScreenPinned,
+    bool? isUninstallProtected,
+    bool? wasLastSessionProtected,
     bool clearActiveSession = false,
   }) {
     return FocusSessionState(
@@ -37,6 +43,8 @@ class FocusSessionState {
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       isScreenPinned: isScreenPinned ?? this.isScreenPinned,
+      isUninstallProtected: clearActiveSession ? false : (isUninstallProtected ?? this.isUninstallProtected),
+      wasLastSessionProtected: wasLastSessionProtected ?? this.wasLastSessionProtected,
     );
   }
 }
@@ -93,12 +101,14 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
 
           await _database.insertSession(session);
           final inLock = await _nativeBridge.isInLockTaskMode();
-          state = state.copyWith(activeSession: session, isLoading: false, isScreenPinned: inLock);
+          final isProtected = nativeSessionData['uninstallProtected'] as bool? ?? false;
+          state = state.copyWith(activeSession: session, isLoading: false, isScreenPinned: inLock, isUninstallProtected: isProtected);
           return;
         } else {
           // Clean up expired session
           await _nativeBridge.stopBlocking();
           await _nativeBridge.stopScreenPinning();
+          await _nativeBridge.disableUninstallProtection();
         }
       }
 
@@ -115,7 +125,8 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
       }
 
       await _nativeBridge.stopScreenPinning();
-      state = state.copyWith(isLoading: false, clearActiveSession: true, isScreenPinned: false);
+      await _nativeBridge.disableUninstallProtection();
+      state = state.copyWith(isLoading: false, clearActiveSession: true, isScreenPinned: false, isUninstallProtected: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
     }
@@ -128,6 +139,7 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
     StrictModeType? strictModeType,
     String? label,
     bool isScreenPinning = false,
+    bool uninstallProtected = false,
   }) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
@@ -165,6 +177,7 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
         isStrict: resolvedStrictMode != StrictModeType.off,
         strictModeType: resolvedStrictMode.toInt(),
         label: label,
+        uninstallProtected: uninstallProtected,
       );
 
       if (!nativeStarted) {
@@ -176,10 +189,16 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
         await _nativeBridge.startScreenPinning();
       }
 
+      // 4. Enable session-scoped uninstall protection if requested
+      if (uninstallProtected) {
+        await _nativeBridge.enableUninstallProtection();
+      }
+
       state = state.copyWith(
         activeSession: session,
         isLoading: false,
         isScreenPinned: isScreenPinning,
+        isUninstallProtected: uninstallProtected,
       );
       return true;
     } catch (e) {
@@ -197,9 +216,11 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
     final current = state.activeSession;
     if (current == null || _isProcessing) return;
     _isProcessing = true;
+    final wasProtected = state.isUninstallProtected;
 
     state = state.copyWith(isLoading: true);
     try {
+      await _nativeBridge.disableUninstallProtection();
       await _nativeBridge.stopBlocking();
       await _nativeBridge.stopScreenPinning();
       final finalStatus = isInterrupted ? SessionStatus.interrupted : SessionStatus.cancelled;
@@ -208,6 +229,8 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
         isLoading: false,
         clearActiveSession: true,
         isScreenPinned: false,
+        isUninstallProtected: false,
+        wasLastSessionProtected: wasProtected,
         lastCompletedSession: current.copyWith(status: finalStatus),
       );
     } catch (e) {
@@ -221,9 +244,11 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
     final current = state.activeSession;
     if (current == null || _isProcessing) return;
     _isProcessing = true;
+    final wasProtected = state.isUninstallProtected;
 
     state = state.copyWith(isLoading: true);
     try {
+      await _nativeBridge.disableUninstallProtection();
       await _nativeBridge.stopBlocking();
       await _nativeBridge.stopScreenPinning();
       final completedSession = current.copyWith(status: SessionStatus.completed, completedAt: DateTime.now());
@@ -232,6 +257,8 @@ class FocusSessionNotifier extends StateNotifier<FocusSessionState> {
         isLoading: false,
         clearActiveSession: true,
         isScreenPinned: false,
+        isUninstallProtected: false,
+        wasLastSessionProtected: wasProtected,
         lastCompletedSession: completedSession,
       );
     } catch (e) {

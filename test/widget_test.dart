@@ -99,7 +99,21 @@ void main() {
       expect(toggled.isSelected, true);
       expect(toggled.packageName, 'com.instagram.android');
     });
+
+    test('parses iconBytes from map as Uint8List or List<int>', () {
+      final dummyBytes = [137, 80, 78, 71, 13, 10, 26, 10]; // PNG magic header
+      final appFromList = InstalledApp.fromMap({
+        'appName': 'YouTube',
+        'packageName': 'com.google.android.youtube',
+        'iconBytes': dummyBytes,
+      });
+
+      expect(appFromList.appName, 'YouTube');
+      expect(appFromList.iconBytes != null, true);
+      expect(appFromList.iconBytes!.length, 8);
+    });
   });
+
 
   group('PermissionStatusState Tests', () {
     test('instantiates with Device Admin and Screen Pinning properties', () {

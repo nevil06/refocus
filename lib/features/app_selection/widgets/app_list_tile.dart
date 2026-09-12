@@ -21,7 +21,7 @@ class AppListTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: RefocusCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         backgroundColor: app.isSelected
             ? AppColors.primary.withOpacity(0.08)
             : AppColors.surface,
@@ -34,18 +34,34 @@ class AppListTile extends StatelessWidget {
         onTap: () => onToggle(!app.isSelected),
         child: Row(
           children: [
-            // App Icon
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: iconBytes != null
-                  ? Image.memory(
-                      iconBytes,
-                      width: 44,
-                      height: 44,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _buildFallbackIcon(),
-                    )
-                  : _buildFallbackIcon(),
+            // App Icon Container
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: app.isSelected
+                      ? AppColors.primary.withOpacity(0.3)
+                      : AppColors.borderLight.withOpacity(0.5),
+                  width: 1,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(11),
+                child: iconBytes != null && iconBytes.isNotEmpty
+                    ? Image.memory(
+                        iconBytes,
+                        width: 44,
+                        height: 44,
+                        fit: BoxFit.cover,
+                        gaplessPlayback: true,
+                        filterQuality: FilterQuality.medium,
+                        errorBuilder: (context, error, stackTrace) => _buildFallbackIcon(),
+                      )
+                    : _buildFallbackIcon(),
+              ),
             ),
             const SizedBox(width: 14),
             // App Name & Package
@@ -76,7 +92,8 @@ class AppListTile extends StatelessWidget {
                 ],
               ),
             ),
-            // Glowing Purple Switch / Indicator
+            const SizedBox(width: 8),
+            // Glowing Selection Indicator
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 26,
@@ -118,7 +135,7 @@ class AppListTile extends StatelessWidget {
       height: 44,
       decoration: BoxDecoration(
         color: AppColors.surfaceHover,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(11),
       ),
       child: const Icon(
         Icons.android_rounded,
@@ -128,3 +145,4 @@ class AppListTile extends StatelessWidget {
     );
   }
 }
+

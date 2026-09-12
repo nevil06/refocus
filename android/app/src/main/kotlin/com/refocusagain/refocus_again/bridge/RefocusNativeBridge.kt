@@ -75,6 +75,7 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
                     val isStrict = call.argument<Boolean>("isStrict") ?: false
                     val strictModeType = (call.argument<Number>("strictModeType"))?.toInt() ?: if (isStrict) 1 else 0
                     val label = call.argument<String>("label")
+                    val uninstallProtected = call.argument<Boolean>("uninstallProtected") ?: false
 
                     SessionStateManager.saveSession(
                         context,
@@ -85,7 +86,8 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
                         blockedPackages,
                         isStrict,
                         label,
-                        strictModeType
+                        strictModeType,
+                        uninstallProtected
                     )
 
                     FocusBlockerService.startService(context)
@@ -96,6 +98,7 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
             }
             "stopBlocking" -> {
                 try {
+                    SessionStateManager.setUninstallProtected(context, false)
                     SessionStateManager.clearSession(context)
                     FocusBlockerService.stopService(context)
                     result.success(true)
@@ -198,6 +201,44 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
             "openDeviceAdminSettings" -> {
                 openDeviceAdminSettings()
                 result.success(true)
+            }
+            // Session-Scoped Uninstall Protection
+            "enableUninstallProtection" -> {
+                try {
+                    if (isDeviceAdminActive()) {
+                        SessionStateManager.setUninstallProtected(context, true)
+                        Log.d(TAG, "Uninstall protection enabled for current session")
+                        result.success(true)
+                    } else {
+                        Log.w(TAG, "Cannot enable uninstall protection: Device Admin not active")
+                        result.success(false)
+                    }
+                } catch (e: Exception) {
+                    result.error("PROTECTION_ERROR", e.message, null)
+                }
+            }
+            "disableUninstallProtection" -> {
+                try {
+                    SessionStateManager.setUninstallProtected(context, false)
+                    Log.d(TAG, "Uninstall protection disabled")
+                    result.success(true)
+                } catch (e: Exception) {
+                    result.error("PROTECTION_ERROR", e.message, null)
+                }
+            }
+            "removeDeviceAdmin" -> {
+                try {
+                    val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as? DevicePolicyManager
+                    val adminComponent = ComponentName(context, RefocusDeviceAdminReceiver::class.java)
+                    if (dpm != null && dpm.isAdminActive(adminComponent)) {
+                        dpm.removeActiveAdmin(adminComponent)
+                        Log.d(TAG, "Device Admin removed programmatically")
+                    }
+                    result.success(true)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to remove Device Admin: ${e.message}", e)
+                    result.error("DEVICE_ADMIN_ERROR", e.message, null)
+                }
             }
             else -> {
                 result.notImplemented()

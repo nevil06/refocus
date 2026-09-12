@@ -114,6 +114,38 @@ class SessionCompleteScreen extends ConsumerWidget {
                 ),
               ),
 
+              // Protection Released Note
+              if (sessionState.wasLastSessionProtected) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.primary.withOpacity(0.25)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.lock_open_rounded,
+                        color: AppColors.primaryLight,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Protection released — you can uninstall normally',
+                        style: GoogleFonts.inter(
+                          color: AppColors.primaryLight,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
               const Spacer(flex: 3),
 
               // Action Buttons
