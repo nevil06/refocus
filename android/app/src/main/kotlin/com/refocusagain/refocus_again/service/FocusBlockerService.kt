@@ -148,8 +148,6 @@ class FocusBlockerService : Service() {
             while (isActive) {
                 delay(15000L) // Update notification every 15s to save battery
                 if (!SessionStateManager.isSessionActive(this@FocusBlockerService)) {
-                    // Session expired — clear uninstall protection as a safety net
-                    SessionStateManager.setUninstallProtected(this@FocusBlockerService, false)
                     stopForegroundTask()
                     stopSelf()
                     break

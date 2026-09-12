@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Keystores, signing, and local credentials (Security Review Item 5)
+*.jks
+*.keystore
+key.properties
+local.properties
+

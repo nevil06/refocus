@@ -248,6 +248,15 @@ object InstalledAppsProvider {
         }
 
         appList.sortBy { (it["appName"] as? String)?.lowercase() ?: "" }
+
+        Log.i("AppIconDiag", "=== Native getInstalledApps discovered ${appList.size} apps ===")
+        for (app in appList) {
+            val pkg = app["packageName"] as? String ?: ""
+            val name = app["appName"] as? String ?: ""
+            val bytes = app["iconBytes"] as? ByteArray
+            Log.i("AppIconDiag", "Native App: $pkg ($name) -> iconBytes size: ${bytes?.size}")
+        }
+
         appList
     }
 }

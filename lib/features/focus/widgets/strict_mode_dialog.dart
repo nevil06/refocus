@@ -63,10 +63,10 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
   Widget build(BuildContext context) {
     if (!widget.isStrictMode) {
       return AlertDialog(
-        backgroundColor: AppColors.surfaceElevated,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.border),
+        backgroundColor: AppColors.surfaceContainerHigh,
+        shape: const RoundedRectangleBorder(
+          borderRadius: AppRadius.extraLargeRadius,
+          side: BorderSide(color: AppColors.border),
         ),
         title: Text(
           'End Focus Session?',
@@ -107,10 +107,10 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
     final canStop = _countdown == 0 && isWordConfirmed;
 
     return AlertDialog(
-      backgroundColor: AppColors.surfaceElevated,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: const BorderSide(color: AppColors.border),
+      backgroundColor: AppColors.surfaceContainerHigh,
+      shape: const RoundedRectangleBorder(
+        borderRadius: AppRadius.extraLargeRadius,
+        side: BorderSide(color: AppColors.border),
       ),
       title: Row(
         children: [
@@ -118,7 +118,7 @@ class _StrictModeStopDialogState extends State<StrictModeStopDialog> {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: AppColors.amber.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppRadius.small),
             ),
             child: const Icon(Icons.lock_clock_rounded, color: AppColors.amber, size: 20),
           ),

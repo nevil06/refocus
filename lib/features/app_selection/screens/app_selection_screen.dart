@@ -108,15 +108,30 @@ class _AppSelectionScreenState extends ConsumerState<AppSelectionScreen> {
               ),
             ),
 
-            // Search Bar
+            // Search Bar (M3 Pill Shape)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
               child: TextField(
                 controller: _searchController,
                 onChanged: notifier.search,
                 decoration: InputDecoration(
                   hintText: 'Search installed applications...',
                   prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+                  filled: true,
+                  fillColor: AppColors.surfaceContainerHigh,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  border: const OutlineInputBorder(
+                    borderRadius: AppRadius.fullRadius,
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: const OutlineInputBorder(
+                    borderRadius: AppRadius.fullRadius,
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderRadius: AppRadius.fullRadius,
+                    borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                  ),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
                           icon: const Icon(Icons.clear_rounded, size: 20),
@@ -150,7 +165,7 @@ class _AppSelectionScreenState extends ConsumerState<AppSelectionScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             // Apps List or Empty / Loading State
             Expanded(

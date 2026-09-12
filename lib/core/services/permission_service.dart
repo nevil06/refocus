@@ -5,7 +5,6 @@ class PermissionStatusState {
   final bool isBatteryOptimizationIgnored;
   final bool isNotificationGranted;
   final bool isNotificationListenerGranted;
-  final bool isDeviceAdminActive;
   final bool isScreenPinningEnabled;
 
   const PermissionStatusState({
@@ -13,7 +12,6 @@ class PermissionStatusState {
     required this.isBatteryOptimizationIgnored,
     required this.isNotificationGranted,
     this.isNotificationListenerGranted = false,
-    this.isDeviceAdminActive = false,
     this.isScreenPinningEnabled = true,
   });
 
@@ -30,7 +28,6 @@ class PermissionService {
     final battery = await _nativeBridge.isIgnoringBatteryOptimizations();
     final notification = await _nativeBridge.hasNotificationPermission();
     final notificationListener = await _nativeBridge.getNotificationPermissionStatus();
-    final deviceAdmin = await _nativeBridge.isDeviceAdminActive();
     final screenPinning = await _nativeBridge.isScreenPinningEnabled();
 
     return PermissionStatusState(
@@ -38,7 +35,6 @@ class PermissionService {
       isBatteryOptimizationIgnored: battery,
       isNotificationGranted: notification,
       isNotificationListenerGranted: notificationListener,
-      isDeviceAdminActive: deviceAdmin,
       isScreenPinningEnabled: screenPinning,
     );
   }
@@ -53,14 +49,6 @@ class PermissionService {
 
   Future<void> requestNotificationAccess() async {
     await _nativeBridge.requestNotificationAccess();
-  }
-
-  Future<void> requestDeviceAdmin() async {
-    await _nativeBridge.requestDeviceAdmin();
-  }
-
-  Future<void> openDeviceAdminSettings() async {
-    await _nativeBridge.openDeviceAdminSettings();
   }
 
   Future<void> openScreenPinningSettings() async {

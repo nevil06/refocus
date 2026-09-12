@@ -85,6 +85,8 @@ class SessionCompleteScreen extends ConsumerWidget {
 
               // Summary Card
               RefocusCard(
+                tonalElevation: 2,
+                borderRadius: AppRadius.large,
                 padding: const EdgeInsets.all(20),
                 gradient: AppGradients.cardGradient,
                 hasGlow: true,
@@ -115,36 +117,7 @@ class SessionCompleteScreen extends ConsumerWidget {
               ),
 
               // Protection Released Note
-              if (sessionState.wasLastSessionProtected) ...[
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.primary.withOpacity(0.25)),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.lock_open_rounded,
-                        color: AppColors.primaryLight,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Protection released — you can uninstall normally',
-                        style: GoogleFonts.inter(
-                          color: AppColors.primaryLight,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+
 
               const Spacer(flex: 3),
 
@@ -212,7 +185,7 @@ class _MetricRow extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: iconColor.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppRadius.small),
           ),
           child: Icon(icon, color: iconColor, size: 18),
         ),

@@ -7,6 +7,7 @@ import '../../../core/models/focus_session.dart';
 import '../../../core/utils/time_utils.dart';
 import '../../../core/widgets/refocus_components.dart';
 import '../../focus/providers/focus_session_provider.dart';
+import '../../focus/providers/timer_provider.dart';
 import '../../wellbeing/providers/wellbeing_provider.dart';
 import '../providers/home_provider.dart';
 
@@ -25,6 +26,7 @@ class HomeScreen extends ConsumerWidget {
     final statsAsync = ref.watch(homeStatsProvider);
     final wellbeingAsync = ref.watch(wellbeingSummaryProvider);
     final focusSessionState = ref.watch(focusSessionProvider);
+    final timerState = ref.watch(timerProvider);
     final isSessionActive = focusSessionState.isSessionActive;
 
     return Scaffold(
@@ -110,60 +112,58 @@ class HomeScreen extends ConsumerWidget {
                     const SizedBox(height: 24),
 
                     // Primary Hero Card (Active or New Session)
+                    // Primary Hero Card (Active or New Session)
                     if (isSessionActive)
                       RefocusCard(
-                        padding: const EdgeInsets.all(22),
-                        gradient: AppGradients.heroGradient,
-                        hasGlow: true,
+                        padding: const EdgeInsets.all(20),
+                        backgroundColor: AppColors.surfaceContainerHigh,
+                        border: Border.all(color: AppColors.neonMint, width: AppBorders.thick),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 10,
-                                      height: 10,
-                                      decoration: const BoxDecoration(
-                                        color: AppColors.primary,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: AppColors.primary,
-                                            blurRadius: 8,
-                                            spreadRadius: 1,
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'SESSION IN PROGRESS',
-                                      style: GoogleFonts.inter(
-                                        color: AppColors.primaryLight,
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 12,
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                  ],
-                                ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                   decoration: BoxDecoration(
-                                    color: AppColors.surfaceElevated,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: AppColors.border),
+                                    color: AppColors.neonMint,
+                                    borderRadius: AppRadius.smallRadius,
+                                    border: Border.all(color: const Color(0xFF000000), width: AppBorders.standard),
+                                    boxShadow: const [
+                                      BoxShadow(color: Color(0xFF000000), offset: Offset(2, 2), blurRadius: 0),
+                                    ],
                                   ),
-                                  child: Text(
-                                    '${focusSessionState.activeSession?.durationSeconds != null ? (focusSessionState.activeSession!.durationSeconds ~/ 60) : 25} min',
-                                    style: const TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF090A0F),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'SESSION ACTIVE',
+                                        style: GoogleFonts.inter(
+                                          color: const Color(0xFF090A0F),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  TimeUtils.formatRemainingSeconds(timerState.remainingSeconds),
+                                  style: GoogleFonts.outfit(
+                                    color: AppColors.neonMint,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
                                   ),
                                 ),
                               ],
@@ -172,11 +172,11 @@ class HomeScreen extends ConsumerWidget {
                             Text(
                               focusSessionState.activeSession?.label?.isNotEmpty == true
                                   ? focusSessionState.activeSession!.label!
-                                  : 'Deep Focus Session',
+                                  : 'Deep Work Session',
                               style: GoogleFonts.outfit(
                                 color: AppColors.textPrimary,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -185,6 +185,7 @@ class HomeScreen extends ConsumerWidget {
                               style: GoogleFonts.inter(
                                 color: AppColors.textSecondary,
                                 fontSize: 13,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -199,8 +200,10 @@ class HomeScreen extends ConsumerWidget {
                     else
                       RefocusCard(
                         padding: const EdgeInsets.all(22),
-                        gradient: AppGradients.cardGradient,
+                        backgroundColor: AppColors.surfaceContainer,
+                        border: Border.all(color: AppColors.neonMint, width: 2.0),
                         hasGlow: true,
+                        tonalElevation: 2,
                         onTap: () => context.push('/focus/setup'),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,11 +212,14 @@ class HomeScreen extends ConsumerWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary.withOpacity(0.16),
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+                                    color: AppColors.neonMint,
+                                    borderRadius: BorderRadius.circular(AppRadius.small),
+                                    border: Border.all(color: const Color(0xFF000000), width: 1.5),
+                                    boxShadow: const [
+                                      BoxShadow(color: Color(0xFF000000), offset: Offset(2, 2), blurRadius: 0),
+                                    ],
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -222,17 +228,18 @@ class HomeScreen extends ConsumerWidget {
                                         width: 8,
                                         height: 8,
                                         decoration: const BoxDecoration(
-                                          color: AppColors.primary,
+                                          color: Color(0xFF090A0F),
                                           shape: BoxShape.circle,
                                         ),
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
-                                        'Start Focus',
+                                        'START FOCUS',
                                         style: GoogleFonts.inter(
-                                          color: AppColors.primaryLight,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
+                                          color: const Color(0xFF090A0F),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: 0.5,
                                         ),
                                       ),
                                     ],
@@ -243,16 +250,16 @@ class HomeScreen extends ConsumerWidget {
                                     Text(
                                       '25 minutes',
                                       style: GoogleFonts.inter(
-                                        color: AppColors.textSecondary,
+                                        color: AppColors.textPrimary,
                                         fontSize: 13,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w700,
                                       ),
                                     ),
                                     const SizedBox(width: 4),
                                     const Icon(
                                       Icons.arrow_forward_rounded,
                                       size: 16,
-                                      color: AppColors.primary,
+                                      color: AppColors.neonMint,
                                     ),
                                   ],
                                 ),
@@ -263,9 +270,9 @@ class HomeScreen extends ConsumerWidget {
                               'Block distractions.\nBuild your future.',
                               style: GoogleFonts.outfit(
                                 color: AppColors.textPrimary,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w800,
-                                height: 1.2,
+                                fontSize: 26,
+                                fontWeight: FontWeight.w900,
+                                height: 1.15,
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -436,6 +443,7 @@ class _QuickActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return RefocusCard(
       padding: const EdgeInsets.all(16),
+      tonalElevation: 2,
       onTap: onTap,
       child: Row(
         children: [
@@ -494,6 +502,8 @@ class _RecentSessionTile extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8),
       child: RefocusCard(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        tonalElevation: 1,
+        borderRadius: AppRadius.medium,
         child: Row(
           children: [
             Container(

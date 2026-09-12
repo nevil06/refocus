@@ -19,37 +19,46 @@ class AppListTile extends StatelessWidget {
     final iconBytes = app.iconBytes;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       child: RefocusCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        tonalElevation: app.isSelected ? 3 : 1,
+        borderRadius: AppRadius.large,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         backgroundColor: app.isSelected
-            ? AppColors.primary.withOpacity(0.08)
-            : AppColors.surface,
+            ? const Color(0xFF15221F)
+            : AppColors.surfaceContainer,
         border: Border.all(
           color: app.isSelected
-              ? AppColors.primary.withOpacity(0.4)
+              ? AppColors.neonMint
               : AppColors.border,
-          width: app.isSelected ? 1.5 : 1,
+          width: 2.0,
         ),
         onTap: () => onToggle(!app.isSelected),
         child: Row(
           children: [
-            // App Icon Container
+            // App Icon Container (Neo-Brutalist Square Box)
             Container(
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.surfaceElevated,
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(4),
                 border: Border.all(
                   color: app.isSelected
-                      ? AppColors.primary.withOpacity(0.3)
-                      : AppColors.borderLight.withOpacity(0.5),
-                  width: 1,
+                      ? AppColors.neonMint
+                      : AppColors.border,
+                  width: 2.0,
                 ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0xFF000000),
+                    offset: Offset(2, 2),
+                    blurRadius: 0,
+                  ),
+                ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(11),
+                borderRadius: BorderRadius.circular(2),
                 child: iconBytes != null && iconBytes.isNotEmpty
                     ? Image.memory(
                         iconBytes,
@@ -77,7 +86,7 @@ class AppListTile extends StatelessWidget {
                     style: GoogleFonts.inter(
                       color: AppColors.textPrimary,
                       fontSize: 15,
-                      fontWeight: app.isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: app.isSelected ? FontWeight.w800 : FontWeight.w600,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -88,6 +97,7 @@ class AppListTile extends StatelessWidget {
                     style: GoogleFonts.inter(
                       color: AppColors.textMuted,
                       fontSize: 11,
+                      fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -96,33 +106,30 @@ class AppListTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            // Glowing Selection Indicator
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+            // Neo-Brutalist Selection Checkbox
+            Container(
               width: 26,
               height: 26,
               decoration: BoxDecoration(
-                color: app.isSelected ? AppColors.primary : AppColors.surfaceElevated,
-                shape: BoxShape.circle,
+                color: app.isSelected ? AppColors.neonMint : AppColors.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(3),
                 border: Border.all(
-                  color: app.isSelected ? AppColors.primary : AppColors.borderLight,
-                  width: 1.5,
+                  color: const Color(0xFF000000),
+                  width: 2.0,
                 ),
-                boxShadow: app.isSelected
-                    ? [
-                        BoxShadow(
-                          color: AppColors.primary.withOpacity(0.4),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        )
-                      ]
-                    : null,
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0xFF000000),
+                    offset: Offset(2, 2),
+                    blurRadius: 0,
+                  ),
+                ],
               ),
               child: Center(
                 child: Icon(
                   Icons.check_rounded,
                   size: 16,
-                  color: app.isSelected ? Colors.white : Colors.transparent,
+                  color: app.isSelected ? const Color(0xFF090A0F) : Colors.transparent,
                 ),
               ),
             ),
@@ -141,22 +148,22 @@ class AppListTile extends StatelessWidget {
       width: 44,
       height: 44,
       decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(11),
+        color: AppColors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(2),
       ),
       child: Center(
         child: initial.isNotEmpty
             ? Text(
                 initial,
                 style: GoogleFonts.outfit(
-                  color: AppColors.accentLavender,
+                  color: AppColors.neonMint,
                   fontSize: 18,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w900,
                 ),
               )
             : const Icon(
                 Icons.android_rounded,
-                color: AppColors.textSecondary,
+                color: AppColors.neonMint,
                 size: 22,
               ),
       ),

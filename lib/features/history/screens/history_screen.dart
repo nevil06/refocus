@@ -75,6 +75,8 @@ class HistoryScreen extends ConsumerWidget {
                           padding: const EdgeInsets.all(20),
                           gradient: AppGradients.cardGradient,
                           hasGlow: true,
+                          tonalElevation: 2,
+                          borderRadius: AppRadius.large,
                           child: Row(
                             children: [
                               Expanded(
@@ -187,6 +189,8 @@ class _HistorySessionTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: RefocusCard(
+        tonalElevation: 1,
+        borderRadius: AppRadius.medium,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
@@ -196,7 +200,7 @@ class _HistorySessionTile extends StatelessWidget {
                 color: isCompleted
                     ? AppColors.success.withOpacity(0.14)
                     : AppColors.danger.withOpacity(0.14),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(AppRadius.small),
               ),
               child: Icon(
                 isCompleted ? Icons.check_rounded : Icons.close_rounded,

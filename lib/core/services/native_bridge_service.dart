@@ -26,6 +26,20 @@ class NativeBridgeService {
       final List<dynamic>? rawList = await _channel.invokeMethod<List<dynamic>>('getInstalledApps');
       if (rawList == null) return [];
 
+      debugPrint('=== Dart AppIconDiag: Received ${rawList.length} apps from native MethodChannel ===');
+      for (final item in rawList) {
+        if (item is Map) {
+          final pkg = item['packageName'];
+          final name = item['appName'];
+          final rawBytes = item['iconBytes'];
+          final typeStr = rawBytes == null ? 'null' : rawBytes.runtimeType.toString();
+          final len = rawBytes is Uint8List
+              ? rawBytes.length
+              : (rawBytes is List ? rawBytes.length : (rawBytes != null ? 'unknown' : 'null'));
+          debugPrint('Dart AppIconDiag: $pkg ($name) -> iconBytes type: $typeStr, length: $len');
+        }
+      }
+
       return rawList
           .whereType<Map<dynamic, dynamic>>()
           .map((item) => InstalledApp.fromMap(item))
@@ -45,7 +59,6 @@ class NativeBridgeService {
     required bool isStrict,
     int? strictModeType,
     String? label,
-    bool uninstallProtected = false,
   }) async {
     try {
       final bool? result = await _channel.invokeMethod<bool>('startBlocking', {
@@ -57,7 +70,6 @@ class NativeBridgeService {
         'isStrict': isStrict,
         'strictModeType': strictModeType ?? (isStrict ? 1 : 0),
         'label': label ?? '',
-        'uninstallProtected': uninstallProtected,
       });
       return result ?? false;
     } catch (_) {
@@ -210,55 +222,5 @@ class NativeBridgeService {
     try {
       await _channel.invokeMethod('openScreenPinningSettings');
     } catch (_) {}
-  }
-
-  // Device Admin (Uninstall Protection)
-  Future<bool> isDeviceAdminActive() async {
-    try {
-      final bool? result = await _channel.invokeMethod<bool>('isDeviceAdminActive');
-      return result ?? false;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  Future<void> requestDeviceAdmin() async {
-    try {
-      await _channel.invokeMethod('requestDeviceAdmin');
-    } catch (_) {}
-  }
-
-  Future<void> openDeviceAdminSettings() async {
-    try {
-      await _channel.invokeMethod('openDeviceAdminSettings');
-    } catch (_) {}
-  }
-
-  // Session-Scoped Uninstall Protection
-  Future<bool> enableUninstallProtection() async {
-    try {
-      final bool? result = await _channel.invokeMethod<bool>('enableUninstallProtection');
-      return result ?? false;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  Future<bool> disableUninstallProtection() async {
-    try {
-      final bool? result = await _channel.invokeMethod<bool>('disableUninstallProtection');
-      return result ?? false;
-    } catch (_) {
-      return false;
-    }
-  }
-
-  Future<bool> removeDeviceAdmin() async {
-    try {
-      final bool? result = await _channel.invokeMethod<bool>('removeDeviceAdmin');
-      return result ?? false;
-    } catch (_) {
-      return false;
-    }
   }
 }

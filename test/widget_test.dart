@@ -116,19 +116,17 @@ void main() {
 
 
   group('PermissionStatusState Tests', () {
-    test('instantiates with Device Admin and Screen Pinning properties', () {
+    test('instantiates with permissions and Screen Pinning properties', () {
       const state = PermissionStatusState(
         isAccessibilityGranted: true,
         isBatteryOptimizationIgnored: true,
         isNotificationGranted: true,
         isNotificationListenerGranted: true,
-        isDeviceAdminActive: true,
         isScreenPinningEnabled: true,
       );
 
       expect(state.isAccessibilityGranted, true);
       expect(state.isNotificationListenerGranted, true);
-      expect(state.isDeviceAdminActive, true);
       expect(state.isScreenPinningEnabled, true);
       expect(state.isCorePermissionGranted, true);
     });
@@ -136,10 +134,22 @@ void main() {
 
   group('Premium Dark Theme & Component Tests', () {
     test('AppColors verify violet / obsidian dark tokens', () {
-      expect(AppColors.background, const Color(0xFF08090E));
+      expect(AppColors.deepObsidian, const Color(0xFF090A0F));
+      expect(AppColors.background, const Color(0xFF090A0F));
       expect(AppColors.primary, const Color(0xFF8B5CF6));
-      expect(AppColors.secondary, const Color(0xFFC4B5FD));
-      expect(AppColors.surface, const Color(0xFF141724));
+      expect(AppColors.surface, const Color(0xFF12151E));
+      expect(AppColors.surfaceElevated, const Color(0xFF1A1F2C));
+      expect(AppColors.neonMint, const Color(0xFF00E699));
+      expect(AppColors.electricCyan, const Color(0xFF38BDF8));
+      expect(AppColors.royalIndigo, const Color(0xFF818CF8));
+    });
+
+    test('AppRadius tokens verify Neo-Brutalism sharp shape scale', () {
+      expect(AppRadius.small, 2.0);
+      expect(AppRadius.medium, 3.0);
+      expect(AppRadius.large, 4.0);
+      expect(AppRadius.extraLarge, 4.0);
+      expect(AppRadius.full, 4.0);
     });
 
     testWidgets('RefocusButton renders with text and triggers callback', (tester) async {

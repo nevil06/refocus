@@ -19,7 +19,6 @@ import androidx.core.content.ContextCompat
 import com.refocusagain.refocus_again.apps.InstalledAppsProvider
 import com.refocusagain.refocus_again.blocking.NotificationBlockController
 import com.refocusagain.refocus_again.blocking.SessionStateManager
-import com.refocusagain.refocus_again.receiver.RefocusDeviceAdminReceiver
 import com.refocusagain.refocus_again.service.FocusBlockerService
 import com.refocusagain.refocus_again.service.RefocusAccessibilityService
 import com.refocusagain.refocus_again.service.RefocusNotificationListener
@@ -75,7 +74,6 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
                     val isStrict = call.argument<Boolean>("isStrict") ?: false
                     val strictModeType = (call.argument<Number>("strictModeType"))?.toInt() ?: if (isStrict) 1 else 0
                     val label = call.argument<String>("label")
-                    val uninstallProtected = call.argument<Boolean>("uninstallProtected") ?: false
 
                     SessionStateManager.saveSession(
                         context,
@@ -86,8 +84,7 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
                         blockedPackages,
                         isStrict,
                         label,
-                        strictModeType,
-                        uninstallProtected
+                        strictModeType
                     )
 
                     FocusBlockerService.startService(context)
@@ -98,7 +95,6 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
             }
             "stopBlocking" -> {
                 try {
-                    SessionStateManager.setUninstallProtected(context, false)
                     SessionStateManager.clearSession(context)
                     FocusBlockerService.stopService(context)
                     result.success(true)
@@ -184,61 +180,6 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
             "openScreenPinningSettings" -> {
                 openScreenPinningSettings()
                 result.success(true)
-            }
-            // Device Admin (Uninstall Protection)
-            "isDeviceAdminActive" -> {
-                result.success(isDeviceAdminActive())
-            }
-            "requestDeviceAdmin" -> {
-                try {
-                    requestDeviceAdmin()
-                    result.success(true)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to request Device Admin: ${e.message}", e)
-                    result.error("DEVICE_ADMIN_ERROR", e.message, null)
-                }
-            }
-            "openDeviceAdminSettings" -> {
-                openDeviceAdminSettings()
-                result.success(true)
-            }
-            // Session-Scoped Uninstall Protection
-            "enableUninstallProtection" -> {
-                try {
-                    if (isDeviceAdminActive()) {
-                        SessionStateManager.setUninstallProtected(context, true)
-                        Log.d(TAG, "Uninstall protection enabled for current session")
-                        result.success(true)
-                    } else {
-                        Log.w(TAG, "Cannot enable uninstall protection: Device Admin not active")
-                        result.success(false)
-                    }
-                } catch (e: Exception) {
-                    result.error("PROTECTION_ERROR", e.message, null)
-                }
-            }
-            "disableUninstallProtection" -> {
-                try {
-                    SessionStateManager.setUninstallProtected(context, false)
-                    Log.d(TAG, "Uninstall protection disabled")
-                    result.success(true)
-                } catch (e: Exception) {
-                    result.error("PROTECTION_ERROR", e.message, null)
-                }
-            }
-            "removeDeviceAdmin" -> {
-                try {
-                    val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as? DevicePolicyManager
-                    val adminComponent = ComponentName(context, RefocusDeviceAdminReceiver::class.java)
-                    if (dpm != null && dpm.isAdminActive(adminComponent)) {
-                        dpm.removeActiveAdmin(adminComponent)
-                        Log.d(TAG, "Device Admin removed programmatically")
-                    }
-                    result.success(true)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to remove Device Admin: ${e.message}", e)
-                    result.error("DEVICE_ADMIN_ERROR", e.message, null)
-                }
             }
             else -> {
                 result.notImplemented()
@@ -406,51 +347,5 @@ class RefocusNativeBridge(private val context: Context, private val activity: Ac
         }
     }
 
-    // Device Admin Helpers
-    private fun isDeviceAdminActive(): Boolean {
-        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as? DevicePolicyManager ?: return false
-        val adminComponent = ComponentName(context, RefocusDeviceAdminReceiver::class.java)
-        return dpm.isAdminActive(adminComponent)
-    }
-
-    private fun requestDeviceAdmin() {
-        val adminComponent = ComponentName(context, RefocusDeviceAdminReceiver::class.java)
-        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
-            putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
-            putExtra(
-                DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-                "Prevents Refocus from being uninstalled during locked focus sessions to help you maintain commitment."
-            )
-            if (activity == null) {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-        }
-        if (activity != null) {
-            activity.startActivity(intent)
-        } else {
-            context.startActivity(intent)
-        }
-    }
-
-    private fun openDeviceAdminSettings() {
-        try {
-            val intent = Intent().apply {
-                component = ComponentName("com.android.settings", "com.android.settings.DeviceAdminSettings")
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
-            context.startActivity(intent)
-        } catch (_: Exception) {
-            try {
-                val fallbackIntent = Intent(Settings.ACTION_SECURITY_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-                context.startActivity(fallbackIntent)
-            } catch (_: Exception) {
-                val appSettingsIntent = Intent(Settings.ACTION_SETTINGS).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-                context.startActivity(appSettingsIntent)
-            }
-        }
-    }
 }
+

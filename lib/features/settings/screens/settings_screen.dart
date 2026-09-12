@@ -4,198 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../app/theme.dart';
 import '../../../core/providers/core_providers.dart';
-import '../../../core/services/permission_service.dart';
 import '../../../core/widgets/refocus_components.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
-
-  void _handleDeviceAdminTap(BuildContext context, bool isActive, PermissionService permissionService) {
-    if (!isActive) {
-      showDialog(
-        context: context,
-        builder: (dialogCtx) => AlertDialog(
-          backgroundColor: AppColors.surfaceElevated,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: AppColors.border),
-          ),
-          title: Row(
-            children: [
-              const Icon(Icons.admin_panel_settings_rounded, color: AppColors.primary, size: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Uninstall Protection',
-                  style: GoogleFonts.outfit(
-                    color: AppColors.textPrimary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Prevent uninstallation during focus sessions',
-                style: GoogleFonts.inter(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'This activates Android Device Admin to prevent uninstalling Refocus mid-session as a bypass for Locked Mode.',
-                style: GoogleFonts.inter(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Important details:',
-                      style: GoogleFonts.inter(
-                        color: AppColors.accentCyan,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '• This is a persistent grant managed by Android OS.\n• To turn off at any time, simply deactivate it in Android Settings → Security → Device Admin apps.',
-                      style: GoogleFonts.inter(
-                        color: AppColors.textSecondary,
-                        fontSize: 11,
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogCtx).pop(),
-              child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
-            ),
-            RefocusButton(
-              text: 'Continue to System Dialog',
-              isFullWidth: false,
-              height: 42,
-              onPressed: () async {
-                Navigator.of(dialogCtx).pop();
-                await permissionService.requestDeviceAdmin();
-              },
-            ),
-          ],
-        ),
-      );
-    } else {
-      showDialog(
-        context: context,
-        builder: (dialogCtx) => AlertDialog(
-          backgroundColor: AppColors.surfaceElevated,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: AppColors.border),
-          ),
-          title: Row(
-            children: [
-              const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 24),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Uninstall Protection is ON',
-                  style: GoogleFonts.outfit(
-                    color: AppColors.textPrimary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Device Admin is active. The Android OS prevents uninstallation of Refocus.',
-                style: GoogleFonts.inter(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 14),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'How to deactivate:',
-                      style: GoogleFonts.inter(
-                        color: AppColors.accentCyan,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '1. Open Android Settings\n2. Go to Security → Device Admin apps\n3. Select Refocus → tap Deactivate',
-                      style: GoogleFonts.inter(
-                        color: AppColors.textSecondary,
-                        fontSize: 11,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogCtx).pop(),
-              child: const Text('Done', style: TextStyle(color: AppColors.textSecondary)),
-            ),
-            RefocusButton(
-              text: 'Open System Settings',
-              isFullWidth: false,
-              height: 42,
-              onPressed: () async {
-                Navigator.of(dialogCtx).pop();
-                await permissionService.openDeviceAdminSettings();
-              },
-            ),
-          ],
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -237,16 +49,19 @@ class SettingsScreen extends ConsumerWidget {
 
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
                 children: [
                   // SECTION 1: FOCUS CONTROLS
                   RefocusSectionHeader(title: 'Focus Controls'),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   RefocusCard(
+                    tonalElevation: 2,
+                    borderRadius: AppRadius.large,
                     padding: EdgeInsets.zero,
                     child: Column(
                       children: [
                         ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                           leading: const Icon(Icons.shield_rounded, color: AppColors.primary),
                           title: Text(
                             'Manage Blocked Apps',
@@ -261,6 +76,7 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                         const Divider(height: 1),
                         SwitchListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                           secondary: const Icon(Icons.notifications_off_rounded, color: AppColors.secondary),
                           title: Text(
                             'Mute Notifications',
@@ -281,18 +97,21 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
 
                   // SECTION 2: ANDROID SYSTEM PERMISSIONS
                   RefocusSectionHeader(title: 'Permissions & System Integration'),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
 
                   permissionsAsync.when(
                     data: (permissions) => RefocusCard(
+                      tonalElevation: 2,
+                      borderRadius: AppRadius.large,
                       padding: EdgeInsets.zero,
                       child: Column(
                         children: [
                           ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                             leading: Icon(
                               Icons.accessibility_new_rounded,
                               color: permissions.isAccessibilityGranted ? AppColors.primary : AppColors.danger,
@@ -312,6 +131,7 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           const Divider(height: 1),
                           ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                             leading: Icon(
                               Icons.notifications_active_rounded,
                               color: permissions.isNotificationListenerGranted ? AppColors.primary : AppColors.amber,
@@ -331,6 +151,7 @@ class SettingsScreen extends ConsumerWidget {
                           ),
                           const Divider(height: 1),
                           ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                             leading: Icon(
                               Icons.battery_saver_rounded,
                               color: permissions.isBatteryOptimizationIgnored ? AppColors.primary : AppColors.amber,
@@ -348,25 +169,6 @@ class SettingsScreen extends ConsumerWidget {
                             trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textMuted),
                             onTap: () => permissionService.requestBatteryOptimization(),
                           ),
-                          const Divider(height: 1),
-                          ListTile(
-                            leading: Icon(
-                              Icons.admin_panel_settings_rounded,
-                              color: permissions.isDeviceAdminActive ? AppColors.primary : AppColors.amber,
-                            ),
-                            title: Text('Uninstall Protection (Device Admin)', style: GoogleFonts.inter(color: AppColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 14)),
-                            subtitle: Text(
-                              permissions.isDeviceAdminActive
-                                  ? 'Active — prevents uninstallation during focus'
-                                  : 'Disabled — tap to enable Device Admin protection',
-                              style: GoogleFonts.inter(
-                                color: permissions.isDeviceAdminActive ? AppColors.primaryLight : AppColors.amber,
-                                fontSize: 12,
-                              ),
-                            ),
-                            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textMuted),
-                            onTap: () => _handleDeviceAdminTap(context, permissions.isDeviceAdminActive, permissionService),
-                          ),
                         ],
                       ),
                     ),
@@ -374,23 +176,26 @@ class SettingsScreen extends ConsumerWidget {
                     error: (err, _) => const SizedBox(),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
 
                   // SECTION 3: APPEARANCE
                   RefocusSectionHeader(title: 'Appearance'),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   RefocusCard(
+                    tonalElevation: 2,
+                    borderRadius: AppRadius.large,
                     padding: EdgeInsets.zero,
                     child: Column(
                       children: [
                         ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                           leading: const Icon(Icons.dark_mode_rounded, color: AppColors.primary),
                           title: Text('Theme', style: GoogleFonts.inter(color: AppColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 14)),
                           trailing: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               color: AppColors.primary.withOpacity(0.16),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: AppRadius.fullRadius,
                             ),
                             child: Text(
                               'Premium Dark',
@@ -400,6 +205,7 @@ class SettingsScreen extends ConsumerWidget {
                         ),
                         const Divider(height: 1),
                         ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                           leading: const Icon(Icons.language_rounded, color: AppColors.accentCyan),
                           title: Text('Language', style: GoogleFonts.inter(color: AppColors.textPrimary, fontWeight: FontWeight.w600, fontSize: 14)),
                           trailing: Text(
@@ -411,13 +217,15 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
 
                   // SECTION 4: PRIVACY & ABOUT
                   RefocusSectionHeader(title: 'Privacy & Security Guarantee'),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   RefocusCard(
-                    padding: const EdgeInsets.all(16),
+                    tonalElevation: 1,
+                    borderRadius: AppRadius.large,
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

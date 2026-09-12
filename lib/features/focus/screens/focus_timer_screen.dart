@@ -158,40 +158,20 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (sessionState.isUninstallProtected) ...[
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.primary.withOpacity(0.4)),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.lock_rounded, size: 12, color: AppColors.primary),
-                                SizedBox(width: 4),
-                                Text(
-                                  'PROTECTED',
-                                  style: TextStyle(
-                                    color: AppColors.primary,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                        ],
                         if (sessionState.isScreenPinned) ...[
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: AppColors.accentCyan.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.accentCyan.withOpacity(0.4)),
+                              color: AppColors.surface,
+                              borderRadius: AppRadius.smallRadius,
+                              border: Border.all(color: AppColors.accentCyan, width: AppBorders.standard),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: AppColors.shadowColor,
+                                  offset: Offset(2, 2),
+                                  blurRadius: 0,
+                                ),
+                              ],
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
@@ -203,7 +183,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                                   style: TextStyle(
                                     color: AppColors.accentCyan,
                                     fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w900,
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -214,11 +194,18 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                         ],
                         if (activeSession.isLockedMode)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: AppColors.danger.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.danger.withOpacity(0.4)),
+                              color: AppColors.surface,
+                              borderRadius: AppRadius.smallRadius,
+                              border: Border.all(color: AppColors.danger, width: AppBorders.standard),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: AppColors.shadowColor,
+                                  offset: Offset(2, 2),
+                                  blurRadius: 0,
+                                ),
+                              ],
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
@@ -230,7 +217,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                                   style: TextStyle(
                                     color: AppColors.danger,
                                     fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w900,
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -239,11 +226,18 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                           )
                         else if (activeSession.isFrictionMode)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: AppColors.amber.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: AppColors.amber.withOpacity(0.4)),
+                              color: AppColors.surface,
+                              borderRadius: AppRadius.smallRadius,
+                              border: Border.all(color: AppColors.amber, width: AppBorders.standard),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: AppColors.shadowColor,
+                                  offset: Offset(2, 2),
+                                  blurRadius: 0,
+                                ),
+                              ],
                             ),
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
@@ -255,7 +249,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                                   style: TextStyle(
                                     color: AppColors.amber,
                                     fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w900,
                                     letterSpacing: 0.5,
                                   ),
                                 ),
@@ -274,7 +268,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                   style: GoogleFonts.inter(
                     color: AppColors.secondary,
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w700,
                     fontStyle: FontStyle.italic,
                   ),
                   textAlign: TextAlign.center,
@@ -300,7 +294,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                       style: GoogleFonts.inter(
                         color: AppColors.textMuted,
                         fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -308,8 +302,8 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                       label,
                       style: GoogleFonts.outfit(
                         color: AppColors.textPrimary,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
                       ),
                       textAlign: TextAlign.center,
                       maxLines: 1,
@@ -322,11 +316,18 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
 
                 // Blocked Apps Count Chip
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceElevated,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.border),
+                    color: AppColors.surfaceContainerHigh,
+                    borderRadius: AppRadius.smallRadius,
+                    border: Border.all(color: AppColors.borderPrimary, width: AppBorders.standard),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: AppColors.shadowColor,
+                        offset: Offset(2, 2),
+                        blurRadius: 0,
+                      ),
+                    ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -336,9 +337,9 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                       Text(
                         '${activeSession.blockedApps.length} apps blocked',
                         style: GoogleFonts.inter(
-                          color: AppColors.textSecondary,
+                          color: AppColors.textPrimary,
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
                     ],
@@ -353,9 +354,16 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
-                      color: AppColors.danger.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.danger.withOpacity(0.35)),
+                      color: AppColors.surfaceContainerHigh,
+                      borderRadius: AppRadius.smallRadius,
+                      border: Border.all(color: AppColors.danger, width: AppBorders.standard),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: AppColors.shadowColor,
+                          offset: Offset(3, 3),
+                          blurRadius: 0,
+                        ),
+                      ],
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -367,7 +375,7 @@ class _FocusTimerScreenState extends ConsumerState<FocusTimerScreen> with Widget
                           style: GoogleFonts.inter(
                             color: AppColors.danger,
                             fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ],

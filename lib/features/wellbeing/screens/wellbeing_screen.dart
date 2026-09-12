@@ -162,15 +162,21 @@ class _WellbeingScreenState extends ConsumerState<WellbeingScreen> {
                                 child: RefocusCard(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 12),
+                                  tonalElevation: 1,
+                                  borderRadius: AppRadius.medium,
                                   child: Row(
                                     children: [
                                       Container(
                                         padding: const EdgeInsets.all(8),
                                         decoration: BoxDecoration(
-                                          color: session.status.name == 'completed'
-                                              ? AppColors.success.withOpacity(0.14)
-                                              : AppColors.danger.withOpacity(0.14),
-                                          borderRadius: BorderRadius.circular(10),
+                                          color: AppColors.surfaceElevated,
+                                          borderRadius: AppRadius.smallRadius,
+                                          border: Border.all(
+                                            color: session.status.name == 'completed'
+                                                ? AppColors.success
+                                                : AppColors.danger,
+                                            width: AppBorders.standard,
+                                          ),
                                         ),
                                         child: Icon(
                                           session.status.name == 'completed'
@@ -265,6 +271,7 @@ class _TotalFocusTimeHeroCard extends StatelessWidget {
       padding: const EdgeInsets.all(22),
       gradient: AppGradients.cardGradient,
       hasGlow: true,
+      tonalElevation: 3,
       child: Column(
         children: [
           Row(
@@ -441,6 +448,7 @@ class _WeeklyFocusGraph extends StatelessWidget {
 
     return RefocusCard(
       padding: const EdgeInsets.all(20),
+      tonalElevation: 2,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -540,21 +548,17 @@ class _WeeklyFocusGraph extends StatelessWidget {
                                           : (day.focusMinutes > 0
                                               ? AppColors.primary.withOpacity(0.4)
                                               : AppColors.surfaceElevated),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: AppRadius.smallRadius,
                                   border: Border.all(
-                                    color: isSelected
-                                        ? AppColors.primaryLight
-                                        : day.isToday
-                                            ? AppColors.primary
-                                            : AppColors.border,
-                                    width: isSelected ? 1.5 : 1.0,
+                                    color: AppColors.borderPrimary,
+                                    width: isSelected ? AppBorders.thick : AppBorders.standard,
                                   ),
                                   boxShadow: day.isToday || isSelected
-                                      ? [
+                                      ? const [
                                           BoxShadow(
-                                            color: AppColors.primary.withOpacity(0.3),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
+                                            color: AppColors.shadowColor,
+                                            blurRadius: 0,
+                                            offset: Offset(2, 2),
                                           )
                                         ]
                                       : null,
@@ -605,6 +609,7 @@ class _HourlyDistributionCard extends StatelessWidget {
 
     return RefocusCard(
       padding: const EdgeInsets.all(20),
+      tonalElevation: 2,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -623,15 +628,16 @@ class _HourlyDistributionCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.14),
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppColors.surfaceElevated,
+                  borderRadius: AppRadius.smallRadius,
+                  border: Border.all(color: AppColors.borderPrimary, width: AppBorders.standard),
                 ),
                 child: Text(
                   distribution.peakPeriodName,
                   style: GoogleFonts.inter(
-                    color: AppColors.primaryLight,
+                    color: AppColors.primary,
                     fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),

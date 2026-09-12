@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../app/theme.dart';
 
 // =============================================================================
-// REFOCUS BUTTON
+// REFOCUS BUTTON (Material 3 Stadium Shape)
 // =============================================================================
 enum RefocusButtonVariant { primary, secondary, outlined, danger, ghost }
 
@@ -18,6 +18,7 @@ class RefocusButton extends StatefulWidget {
   final bool isLoading;
   final double height;
   final EdgeInsetsGeometry? padding;
+  final double? borderRadius;
 
   const RefocusButton({
     super.key,
@@ -31,6 +32,7 @@ class RefocusButton extends StatefulWidget {
     this.isLoading = false,
     this.height = 54.0,
     this.padding,
+    this.borderRadius,
   });
 
   @override
@@ -43,46 +45,77 @@ class _RefocusButtonState extends State<RefocusButton> {
   @override
   Widget build(BuildContext context) {
     final isDisabled = widget.onPressed == null || widget.isLoading;
+    final effectiveRadius = widget.borderRadius ?? AppRadius.large;
 
     Color bg;
     Color fg;
     Border? border;
-    Gradient? gradient;
     List<BoxShadow>? shadows;
+
+    final shadowOffset = _isPressed ? const Offset(1, 1) : const Offset(4, 4);
 
     switch (widget.variant) {
       case RefocusButtonVariant.primary:
-        bg = AppColors.primary;
-        fg = Colors.white;
-        gradient = isDisabled ? null : AppGradients.primaryGradient;
+        bg = AppColors.neonMint;
+        fg = const Color(0xFF090A0F);
+        border = Border.all(color: const Color(0xFF000000), width: 2.5);
         shadows = isDisabled
             ? null
             : [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.35),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
+                  color: const Color(0xFF000000),
+                  offset: shadowOffset,
+                  blurRadius: 0,
                 )
               ];
         break;
       case RefocusButtonVariant.secondary:
-        bg = AppColors.surfaceElevated;
+        bg = AppColors.surfaceContainerHigh;
         fg = AppColors.textPrimary;
-        border = Border.all(color: AppColors.border, width: 1);
+        border = Border.all(color: AppColors.border, width: 2.0);
+        shadows = isDisabled
+            ? null
+            : [
+                BoxShadow(
+                  color: const Color(0xFF000000),
+                  offset: shadowOffset,
+                  blurRadius: 0,
+                )
+              ];
         break;
       case RefocusButtonVariant.outlined:
-        bg = Colors.transparent;
+        bg = AppColors.surfaceContainer;
         fg = AppColors.textPrimary;
-        border = Border.all(color: AppColors.borderLight, width: 1.5);
+        border = Border.all(color: AppColors.border, width: 2.0);
+        shadows = isDisabled
+            ? null
+            : [
+                BoxShadow(
+                  color: const Color(0xFF000000),
+                  offset: shadowOffset,
+                  blurRadius: 0,
+                )
+              ];
         break;
       case RefocusButtonVariant.danger:
-        bg = AppColors.danger.withOpacity(0.12);
-        fg = AppColors.danger;
-        border = Border.all(color: AppColors.danger.withOpacity(0.4), width: 1);
+        bg = AppColors.coralRed;
+        fg = Colors.white;
+        border = Border.all(color: const Color(0xFF000000), width: 2.5);
+        shadows = isDisabled
+            ? null
+            : [
+                BoxShadow(
+                  color: const Color(0xFF000000),
+                  offset: shadowOffset,
+                  blurRadius: 0,
+                )
+              ];
         break;
       case RefocusButtonVariant.ghost:
         bg = Colors.transparent;
         fg = AppColors.textSecondary;
+        border = null;
+        shadows = null;
         break;
     }
 
@@ -95,7 +128,7 @@ class _RefocusButtonState extends State<RefocusButton> {
             width: 18,
             height: 18,
             child: CircularProgressIndicator(
-              strokeWidth: 2,
+              strokeWidth: 2.5,
               valueColor: AlwaysStoppedAnimation<Color>(fg),
             ),
           ),
@@ -112,8 +145,8 @@ class _RefocusButtonState extends State<RefocusButton> {
           style: GoogleFonts.inter(
             color: fg,
             fontSize: 15,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.2,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 0.3,
           ),
         ),
         if (widget.trailing != null && !widget.isLoading) ...[
@@ -123,26 +156,24 @@ class _RefocusButtonState extends State<RefocusButton> {
       ],
     );
 
-    return AnimatedScale(
-      scale: _isPressed && !isDisabled ? 0.97 : 1.0,
-      duration: const Duration(milliseconds: 100),
-      child: GestureDetector(
-        onTapDown: (_) {
-          if (!isDisabled) setState(() => _isPressed = true);
-        },
-        onTapUp: (_) {
-          if (!isDisabled) setState(() => _isPressed = false);
-        },
-        onTapCancel: () {
-          if (!isDisabled) setState(() => _isPressed = false);
-        },
+    return GestureDetector(
+      onTapDown: (_) {
+        if (!isDisabled) setState(() => _isPressed = true);
+      },
+      onTapUp: (_) {
+        if (!isDisabled) setState(() => _isPressed = false);
+      },
+      onTapCancel: () {
+        if (!isDisabled) setState(() => _isPressed = false);
+      },
+      child: Transform.translate(
+        offset: _isPressed && !isDisabled ? const Offset(3, 3) : Offset.zero,
         child: Container(
           height: widget.height,
           width: widget.isFullWidth ? double.infinity : null,
           decoration: BoxDecoration(
             color: bg,
-            gradient: gradient,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(effectiveRadius),
             border: border,
             boxShadow: shadows,
           ),
@@ -150,8 +181,8 @@ class _RefocusButtonState extends State<RefocusButton> {
             color: Colors.transparent,
             child: InkWell(
               onTap: isDisabled ? null : widget.onPressed,
-              borderRadius: BorderRadius.circular(16),
-              splashColor: AppColors.primaryLight.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(effectiveRadius),
+              splashColor: AppColors.neonMint.withOpacity(0.15),
               highlightColor: Colors.transparent,
               child: Padding(
                 padding: widget.padding ??
@@ -167,7 +198,7 @@ class _RefocusButtonState extends State<RefocusButton> {
 }
 
 // =============================================================================
-// REFOCUS CARD
+// REFOCUS CARD (Neo-Brutalism Flat Block, Solid 2px Border & Hard Offset Shadow)
 // =============================================================================
 class RefocusCard extends StatelessWidget {
   final Widget child;
@@ -179,45 +210,64 @@ class RefocusCard extends StatelessWidget {
   final Border? border;
   final double borderRadius;
   final bool hasGlow;
+  final int tonalElevation; // 0=lowest, 1=low, 2=surface, 3=high, 4=highest
 
   const RefocusCard({
     super.key,
     required this.child,
     this.onTap,
-    this.padding = const EdgeInsets.all(18),
+    this.padding = const EdgeInsets.all(20),
     this.margin,
     this.backgroundColor,
     this.gradient,
     this.border,
-    this.borderRadius = 20,
+    this.borderRadius = AppRadius.large,
     this.hasGlow = false,
+    this.tonalElevation = 2,
   });
+
+  Color _resolveSurfaceColor() {
+    if (backgroundColor != null) return backgroundColor!;
+    switch (tonalElevation) {
+      case 0:
+        return AppColors.surfaceContainerLowest;
+      case 1:
+        return AppColors.surfaceContainerLow;
+      case 2:
+        return AppColors.surfaceContainer;
+      case 3:
+        return AppColors.surfaceContainerHigh;
+      case 4:
+      default:
+        return AppColors.surfaceContainerHighest;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final surfaceBg = _resolveSurfaceColor();
     final effectiveBorder = border ??
         Border.all(
           color: hasGlow
-              ? AppColors.primary.withOpacity(0.4)
+              ? AppColors.neonMint
               : AppColors.border,
-          width: 1,
+          width: 2.0,
         );
 
     final cardContent = Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.surface,
-        gradient: gradient,
+        color: surfaceBg,
         borderRadius: BorderRadius.circular(borderRadius),
         border: effectiveBorder,
         boxShadow: [
-          AppShadows.cardShadow,
-          if (hasGlow)
-            BoxShadow(
-              color: AppColors.primary.withOpacity(0.18),
-              blurRadius: 18,
-              spreadRadius: 1,
-            ),
+          hasGlow
+              ? const BoxShadow(
+                  color: AppColors.neonMint,
+                  offset: Offset(4, 4),
+                  blurRadius: 0,
+                )
+              : AppShadows.cardShadow,
         ],
       ),
       child: child,
@@ -231,7 +281,7 @@ class RefocusCard extends StatelessWidget {
           child: InkWell(
             onTap: onTap,
             borderRadius: BorderRadius.circular(borderRadius),
-            splashColor: AppColors.primary.withOpacity(0.1),
+            splashColor: AppColors.neonMint.withOpacity(0.12),
             child: cardContent,
           ),
         ),
@@ -246,26 +296,26 @@ class RefocusCard extends StatelessWidget {
 }
 
 // =============================================================================
-// REFOCUS ICON BUTTON
+// REFOCUS ICON BUTTON (Sharp Neo-Brutalist Shape, 2px Border & Hard Shadow)
 // =============================================================================
 class RefocusIconButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onPressed;
-  final String? tooltip;
   final Color? iconColor;
   final Color? backgroundColor;
   final double size;
   final double iconSize;
+  final String? tooltip;
 
   const RefocusIconButton({
     super.key,
     required this.icon,
     required this.onPressed,
-    this.tooltip,
     this.iconColor,
     this.backgroundColor,
-    this.size = 42,
-    this.iconSize = 20,
+    this.size = 44.0,
+    this.iconSize = 20.0,
+    this.tooltip,
   });
 
   @override
@@ -274,16 +324,23 @@ class RefocusIconButton extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border, width: 1),
+        color: backgroundColor ?? AppColors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(AppRadius.large),
+        border: Border.all(color: AppColors.border, width: 2.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF000000),
+            offset: Offset(3, 3),
+            blurRadius: 0,
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: BorderRadius.circular(12),
-          splashColor: AppColors.primary.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(AppRadius.large),
+          splashColor: AppColors.neonMint.withOpacity(0.15),
           child: Center(
             child: Icon(
               icon,
@@ -303,7 +360,7 @@ class RefocusIconButton extends StatelessWidget {
 }
 
 // =============================================================================
-// REFOCUS CHIP
+// REFOCUS CHIP (Neo-Brutalism Sharp 4px Corner, 2px Border & Hard Shadow)
 // =============================================================================
 class RefocusChip extends StatelessWidget {
   final String label;
@@ -312,6 +369,7 @@ class RefocusChip extends StatelessWidget {
   final IconData? icon;
   final Widget? leading;
   final Color? activeColor;
+  final double borderRadius;
 
   const RefocusChip({
     super.key,
@@ -321,40 +379,36 @@ class RefocusChip extends StatelessWidget {
     this.icon,
     this.leading,
     this.activeColor,
+    this.borderRadius = AppRadius.large,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = activeColor ?? AppColors.primary;
+    final color = activeColor ?? AppColors.neonMint;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
+    return Container(
       decoration: BoxDecoration(
-        color: isSelected ? color : AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
+        color: isSelected ? color : AppColors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(
-          color: isSelected ? color : AppColors.border,
-          width: isSelected ? 1.5 : 1,
+          color: isSelected ? const Color(0xFF000000) : AppColors.border,
+          width: 2.0,
         ),
-        boxShadow: isSelected
-            ? [
-                BoxShadow(
-                  color: color.withOpacity(0.35),
-                  blurRadius: 12,
-                  spreadRadius: 1,
-                  offset: const Offset(0, 2),
-                )
-              ]
-            : null,
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF000000),
+            offset: isSelected ? const Offset(3, 3) : const Offset(2, 2),
+            blurRadius: 0,
+          ),
+        ],
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(borderRadius),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -364,17 +418,17 @@ class RefocusChip extends StatelessWidget {
                 ] else if (icon != null) ...[
                   Icon(
                     icon,
-                    size: 16,
-                    color: isSelected ? Colors.white : AppColors.textSecondary,
+                    size: 15,
+                    color: isSelected ? const Color(0xFF090A0F) : AppColors.textSecondary,
                   ),
                   const SizedBox(width: 6),
                 ],
                 Text(
                   label,
                   style: GoogleFonts.inter(
-                    color: isSelected ? Colors.white : AppColors.textPrimary,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    fontSize: 14,
+                    color: isSelected ? const Color(0xFF090A0F) : AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ],
@@ -387,7 +441,110 @@ class RefocusChip extends StatelessWidget {
 }
 
 // =============================================================================
-// REFOCUS STAT CARD
+// REFOCUS SEGMENTED PICKER (Neo-Brutalism Sharp Segmented Button)
+// =============================================================================
+class RefocusSegmentItem<T> {
+  final T value;
+  final String label;
+  final IconData? icon;
+  final Color? activeColor;
+
+  const RefocusSegmentItem({
+    required this.value,
+    required this.label,
+    this.icon,
+    this.activeColor,
+  });
+}
+
+class RefocusSegmentedPicker<T> extends StatelessWidget {
+  final List<RefocusSegmentItem<T>> items;
+  final T selectedValue;
+  final ValueChanged<T> onValueChanged;
+  final EdgeInsetsGeometry? padding;
+
+  const RefocusSegmentedPicker({
+    super.key,
+    required this.items,
+    required this.selectedValue,
+    required this.onValueChanged,
+    this.padding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: padding ?? const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.large),
+        border: Border.all(color: AppColors.border, width: 2.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0xFF000000),
+            offset: Offset(3, 3),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: Row(
+        children: items.map((item) {
+          final isSelected = item.value == selectedValue;
+          final activeColor = item.activeColor ?? AppColors.neonMint;
+
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => onValueChanged(item.value),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected ? activeColor : Colors.transparent,
+                  borderRadius: BorderRadius.circular(AppRadius.small),
+                  border: isSelected
+                      ? Border.all(color: const Color(0xFF000000), width: 2.0)
+                      : null,
+                  boxShadow: isSelected
+                      ? const [
+                          BoxShadow(
+                            color: Color(0xFF000000),
+                            offset: Offset(2, 2),
+                            blurRadius: 0,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (item.icon != null) ...[
+                      Icon(
+                        item.icon,
+                        size: 15,
+                        color: isSelected ? const Color(0xFF090A0F) : AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                    Text(
+                      item.label,
+                      style: GoogleFonts.inter(
+                        color: isSelected ? const Color(0xFF090A0F) : AppColors.textSecondary,
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// REFOCUS STAT CARD (Neo-Brutalism Chunky Stat Card, 2px Border & Hard Shadow)
 // =============================================================================
 class RefocusStatCard extends StatelessWidget {
   final String title;
@@ -396,6 +553,7 @@ class RefocusStatCard extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final VoidCallback? onTap;
+  final int tonalElevation;
 
   const RefocusStatCard({
     super.key,
@@ -405,16 +563,22 @@ class RefocusStatCard extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     this.onTap,
+    this.tonalElevation = 3,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = tonalElevation == 3
+        ? AppColors.surfaceContainerHigh
+        : AppColors.surfaceContainer;
+
     Widget card = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(AppRadius.large),
+        border: Border.all(color: AppColors.border, width: 2.0),
+        boxShadow: const [AppShadows.cardShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,41 +586,43 @@ class RefocusStatCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10),
+              color: iconColor,
+              borderRadius: BorderRadius.circular(AppRadius.small),
+              border: Border.all(color: const Color(0xFF000000), width: 1.5),
             ),
-            child: Icon(icon, color: iconColor, size: 18),
+            child: Icon(icon, color: const Color(0xFF090A0F), size: 18),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Text(
             value,
             style: GoogleFonts.outfit(
               color: AppColors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.2,
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.3,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             title,
             style: GoogleFonts.inter(
               color: AppColors.textSecondary,
               fontSize: 12,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w700,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           if (subtitle != null) ...[
-            const SizedBox(height: 2),
+            const SizedBox(height: 3),
             Text(
               subtitle!,
               style: GoogleFonts.inter(
                 color: AppColors.textMuted,
-                fontSize: 10,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -469,7 +635,7 @@ class RefocusStatCard extends StatelessWidget {
     if (onTap != null) {
       return InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.large),
         child: card,
       );
     }
@@ -504,8 +670,8 @@ class RefocusSectionHeader extends StatelessWidget {
           style: GoogleFonts.inter(
             color: accentColor ?? AppColors.secondary,
             fontSize: 12,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.0,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
           ),
         ),
         if (actionText != null && onAction != null)
@@ -521,16 +687,16 @@ class RefocusSectionHeader extends StatelessWidget {
                 Text(
                   actionText!,
                   style: GoogleFonts.inter(
-                    color: AppColors.primary,
+                    color: AppColors.neonMint,
                     fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(width: 4),
                 const Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 11,
-                  color: AppColors.primary,
+                  color: AppColors.neonMint,
                 ),
               ],
             ),
@@ -541,7 +707,7 @@ class RefocusSectionHeader extends StatelessWidget {
 }
 
 // =============================================================================
-// REFOCUS PROGRESS RING / TIMER
+// REFOCUS PROGRESS RING / TIMER (Neo-Brutalism Chunky Stroke & Solid Colors)
 // =============================================================================
 class RefocusProgressRing extends StatelessWidget {
   final double progress; // 0.0 to 1.0
@@ -556,7 +722,7 @@ class RefocusProgressRing extends StatelessWidget {
     required this.timeText,
     this.subtitle,
     this.size = 260.0,
-    this.strokeWidth = 10.0,
+    this.strokeWidth = 14.0,
   });
 
   @override
@@ -567,17 +733,17 @@ class RefocusProgressRing extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Background Glow Shadow
+          // Hard Shadow Circle (Neo-brutalist solid offset)
           Container(
-            width: size - 30,
-            height: size - 30,
-            decoration: BoxDecoration(
+            width: size - strokeWidth,
+            height: size - strokeWidth,
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.12),
-                  blurRadius: 40,
-                  spreadRadius: 8,
+                  color: Color(0xFF000000),
+                  offset: Offset(6, 6),
+                  blurRadius: 0,
                 ),
               ],
             ),
@@ -598,8 +764,8 @@ class RefocusProgressRing extends StatelessWidget {
                 timeText,
                 style: GoogleFonts.outfit(
                   color: AppColors.textPrimary,
-                  fontSize: 52,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 54,
+                  fontWeight: FontWeight.w900,
                   letterSpacing: -1.5,
                 ),
               ),
@@ -610,7 +776,7 @@ class RefocusProgressRing extends StatelessWidget {
                   style: GoogleFonts.inter(
                     color: AppColors.textSecondary,
                     fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -638,32 +804,28 @@ class _RefocusRingPainter extends CustomPainter {
 
     // 1. Background Track
     final trackPaint = Paint()
-      ..color = AppColors.surfaceElevated
+      ..color = AppColors.surfaceContainerHigh
       ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = strokeWidth;
 
     canvas.drawCircle(center, radius, trackPaint);
 
+    // Track outer border
+    final borderPaint = Paint()
+      ..color = AppColors.border
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+    canvas.drawCircle(center, radius + strokeWidth / 2, borderPaint);
+    canvas.drawCircle(center, radius - strokeWidth / 2, borderPaint);
+
     if (progress <= 0.0) return;
 
-    // 2. Glowing Gradient Active Arc
+    // 2. Active Arc (Solid Neo-Brutalist Neon Mint)
     final rect = Rect.fromCircle(center: center, radius: radius);
-    final sweepGradient = const SweepGradient(
-      colors: [
-        Color(0xFF6366F1),
-        Color(0xFF8B5CF6),
-        Color(0xFFA78BFA),
-        Color(0xFFC4B5FD),
-      ],
-      stops: [0.0, 0.4, 0.7, 1.0],
-    );
-
     final activePaint = Paint()
-      ..shader = sweepGradient.createShader(rect)
+      ..color = AppColors.neonMint
       ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = strokeWidth;
 
     final sweepAngle = 2 * 3.141592653589793 * progress;
     canvas.save();
@@ -682,7 +844,7 @@ class _RefocusRingPainter extends CustomPainter {
 }
 
 // =============================================================================
-// REFOCUS BOTTOM NAVIGATION BAR
+// REFOCUS BOTTOM NAVIGATION BAR (Neo-Brutalism Solid Blocks & 2px Border)
 // =============================================================================
 class RefocusBottomNavigation extends StatelessWidget {
   final int currentIndex;
@@ -703,16 +865,16 @@ class RefocusBottomNavigation extends StatelessWidget {
     ];
 
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.backgroundSecondary.withOpacity(0.95),
-        border: const Border(
-          top: BorderSide(color: AppColors.border, width: 1),
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceContainerLowest,
+        border: Border(
+          top: BorderSide(color: AppColors.border, width: 2.0),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+            color: Color(0xFF000000),
+            offset: Offset(0, -4),
+            blurRadius: 0,
           ),
         ],
       ),
@@ -728,23 +890,29 @@ class RefocusBottomNavigation extends StatelessWidget {
 
               return InkWell(
                 onTap: () => onTap(index),
-                borderRadius: BorderRadius.circular(16),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                borderRadius: BorderRadius.circular(AppRadius.large),
+                child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
+                    horizontal: 18,
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.primary.withOpacity(0.16)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
+                    color: isSelected ? AppColors.neonMint : Colors.transparent,
+                    borderRadius: BorderRadius.circular(AppRadius.large),
                     border: isSelected
                         ? Border.all(
-                            color: AppColors.primary.withOpacity(0.3),
-                            width: 1,
+                            color: const Color(0xFF000000),
+                            width: 2.0,
                           )
+                        : null,
+                    boxShadow: isSelected
+                        ? const [
+                            BoxShadow(
+                              color: Color(0xFF000000),
+                              offset: Offset(2, 2),
+                              blurRadius: 0,
+                            ),
+                          ]
                         : null,
                   ),
                   child: Row(
@@ -753,18 +921,18 @@ class RefocusBottomNavigation extends StatelessWidget {
                       Icon(
                         item.icon,
                         color: isSelected
-                            ? AppColors.primary
+                            ? const Color(0xFF090A0F)
                             : AppColors.textMuted,
-                        size: 22,
+                        size: 20,
                       ),
                       if (isSelected) ...[
                         const SizedBox(width: 8),
                         Text(
                           item.label,
                           style: GoogleFonts.inter(
-                            color: AppColors.primaryLight,
+                            color: const Color(0xFF090A0F),
                             fontSize: 13,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ],
@@ -812,9 +980,10 @@ class RefocusEmptyState extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.surfaceContainer,
+        borderRadius: AppRadius.largeRadius,
+        border: Border.all(color: AppColors.border, width: 2.0),
+        boxShadow: const [AppShadows.cardShadow],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -822,19 +991,26 @@ class RefocusEmptyState extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.surfaceElevated,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.border),
+              color: AppColors.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(AppRadius.large),
+              border: Border.all(color: AppColors.border, width: 2.0),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xFF000000),
+                  offset: Offset(2, 2),
+                  blurRadius: 0,
+                ),
+              ],
             ),
-            child: Icon(icon, color: AppColors.textSecondary, size: 32),
+            child: Icon(icon, color: AppColors.neonMint, size: 32),
           ),
           const SizedBox(height: 16),
           Text(
             title,
             style: GoogleFonts.outfit(
               color: AppColors.textPrimary,
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
             ),
             textAlign: TextAlign.center,
           ),

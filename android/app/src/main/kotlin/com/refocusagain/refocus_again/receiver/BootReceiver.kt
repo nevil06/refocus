@@ -22,10 +22,6 @@ class BootReceiver : BroadcastReceiver() {
                 // Session still active after reboot — restart foreground service
                 Log.d(TAG, "Active session found after boot, restarting FocusBlockerService")
                 FocusBlockerService.startService(context)
-            } else {
-                // Session expired during reboot — ensure protection is cleaned up
-                SessionStateManager.setUninstallProtected(context, false)
-                Log.d(TAG, "No active session after boot, uninstall protection cleared")
             }
         }
     }
