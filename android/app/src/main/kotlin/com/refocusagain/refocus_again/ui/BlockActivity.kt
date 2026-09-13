@@ -2,11 +2,14 @@ package com.refocusagain.refocus_again.ui
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.widget.Button
+import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.refocusagain.refocus_again.MainActivity
 import com.refocusagain.refocus_again.R
 import com.refocusagain.refocus_again.blocking.SessionStateManager
@@ -22,7 +25,9 @@ class BlockActivity : Activity() {
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var tvRemainingTime: TextView
     private lateinit var tvBlockedAppName: TextView
-    private lateinit var btnBackToFocus: Button
+    private lateinit var ivBlockedAppIcon: ImageView
+    private lateinit var btnBackToFocus: View
+    private lateinit var btnExitToHome: View
 
     private val updateTimerRunnable = object : Runnable {
         override fun run() {
@@ -35,12 +40,17 @@ class BlockActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_block)
 
+        // Set system bars to match deep obsidian neobrutalist background
+        window.statusBarColor = ContextCompat.getColor(this, R.color.bg_obsidian)
+        window.navigationBarColor = ContextCompat.getColor(this, R.color.bg_obsidian)
+
         tvBlockedAppName = findViewById(R.id.tvBlockedAppName)
         tvRemainingTime = findViewById(R.id.tvRemainingTime)
+        ivBlockedAppIcon = findViewById(R.id.ivBlockedAppIcon)
         btnBackToFocus = findViewById(R.id.btnBackToFocus)
+        btnExitToHome = findViewById(R.id.btnExitToHome)
 
-        val appName = intent.getStringExtra(EXTRA_BLOCKED_APP_NAME) ?: "This application"
-        tvBlockedAppName.text = "$appName is blocked during your focus session."
+        bindBlockedAppDetails(intent)
 
         btnBackToFocus.setOnClickListener {
             val mainIntent = Intent(this, MainActivity::class.java).apply {
@@ -50,15 +60,38 @@ class BlockActivity : Activity() {
             finish()
         }
 
+        btnExitToHome.setOnClickListener {
+            navigateToHomeLauncher()
+        }
+
         updateRemainingTime()
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         setIntent(intent)
-        val appName = intent?.getStringExtra(EXTRA_BLOCKED_APP_NAME) ?: "This application"
-        tvBlockedAppName.text = "$appName is blocked during your focus session."
+        bindBlockedAppDetails(intent)
         updateRemainingTime()
+    }
+
+    private fun bindBlockedAppDetails(intent: Intent?) {
+        val appName = intent?.getStringExtra(EXTRA_BLOCKED_APP_NAME) ?: "This application"
+        val packageName = intent?.getStringExtra(EXTRA_BLOCKED_PACKAGE)
+
+        tvBlockedAppName.text = "$appName is blocked during your focus session."
+
+        if (!packageName.isNullOrBlank()) {
+            try {
+                val icon = packageManager.getApplicationIcon(packageName)
+                ivBlockedAppIcon.setImageDrawable(icon)
+            } catch (_: PackageManager.NameNotFoundException) {
+                ivBlockedAppIcon.setImageResource(R.drawable.ic_shield_brutal)
+            } catch (_: Exception) {
+                ivBlockedAppIcon.setImageResource(R.drawable.ic_shield_brutal)
+            }
+        } else {
+            ivBlockedAppIcon.setImageResource(R.drawable.ic_shield_brutal)
+        }
     }
 
     override fun onResume() {
@@ -94,14 +127,18 @@ class BlockActivity : Activity() {
         tvRemainingTime.text = formattedTime
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-        // Go back to home launcher or Refocus, never let back button penetrate to blocked app
+    private fun navigateToHomeLauncher() {
         val homeIntent = Intent(Intent.ACTION_MAIN).apply {
             addCategory(Intent.CATEGORY_HOME)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
         startActivity(homeIntent)
         finish()
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        // Go back to home launcher, never let back button penetrate to blocked app
+        navigateToHomeLauncher()
     }
 }

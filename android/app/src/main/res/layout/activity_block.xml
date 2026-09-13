@@ -3,102 +3,237 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
-    android:background="@color/bg_dark"
-    android:paddingStart="32dp"
-    android:paddingEnd="32dp"
-    android:paddingTop="48dp"
-    android:paddingBottom="48dp">
+    android:background="@color/bg_obsidian"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="36dp"
+    android:paddingBottom="28dp">
 
-    <!-- Top Branding -->
-    <TextView
-        android:layout_width="wrap_content"
+    <!-- Top Bar: Branding & Session Badge -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="REFOCUS"
-        android:textColor="@color/accent_lavender"
-        android:textSize="13sp"
-        android:textStyle="bold"
-        android:letterSpacing="0.2"
-        android:layout_marginBottom="32dp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
 
-    <!-- Lock Icon -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="🔒"
-        android:textSize="54sp"
-        android:layout_marginBottom="20dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="REFOCUS"
+            android:textColor="@color/electric_cyan"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.15" />
 
-    <!-- Header Text -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Stay Focused!"
-        android:textColor="@color/text_primary"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="10dp" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
 
-    <!-- Blocked App Message -->
-    <TextView
-        android:id="@+id/tvBlockedAppName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="This app is blocked during your focus session."
-        android:textColor="@color/text_secondary"
-        android:textSize="15sp"
-        android:gravity="center"
-        android:lineSpacingMultiplier="1.2"
-        android:layout_marginBottom="36dp" />
+        <!-- Status Tag -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_brutal_badge"
+            android:paddingStart="10dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="5dp"
+            android:paddingBottom="7dp">
 
-    <!-- Time Remaining Card -->
+            <View
+                android:layout_width="7dp"
+                android:layout_height="7dp"
+                android:background="@color/neon_mint"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FOCUS ACTIVE"
+                android:textColor="@color/neon_mint"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <!-- Blocked App Icon with Lock Tag -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="18dp">
+
+                <FrameLayout
+                    android:layout_width="74dp"
+                    android:layout_height="74dp"
+                    android:background="@drawable/bg_brutal_icon_box"
+                    android:paddingEnd="4dp"
+                    android:paddingBottom="4dp">
+
+                    <ImageView
+                        android:id="@+id/ivBlockedAppIcon"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Blocked App Icon"
+                        android:src="@drawable/ic_shield_brutal" />
+                </FrameLayout>
+
+                <!-- Corner Lock Badge -->
+                <ImageView
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_gravity="bottom|end"
+                    android:background="@drawable/bg_brutal_lock_badge"
+                    android:padding="5dp"
+                    android:contentDescription="Locked"
+                    android:src="@drawable/ic_lock_brutal" />
+            </FrameLayout>
+
+            <!-- Headline -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ACCESS RESTRICTED"
+                android:textColor="@color/text_primary"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.06"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Subtitle Description Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/bg_brutal_card"
+                android:paddingStart="18dp"
+                android:paddingEnd="22dp"
+                android:paddingTop="14dp"
+                android:paddingBottom="18dp"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:id="@+id/tvBlockedAppName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="This application is blocked."
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stay on track. You chose to block this distraction to protect your deep work."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp"
+                    android:gravity="center"
+                    android:lineSpacingMultiplier="1.2" />
+            </LinearLayout>
+
+            <!-- Big Countdown Timer Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/bg_brutal_timer_card"
+                android:paddingStart="20dp"
+                android:paddingEnd="24dp"
+                android:paddingTop="18dp"
+                android:paddingBottom="22dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SESSION TIME REMAINING"
+                    android:textColor="@color/neon_mint"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.12"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:id="@+id/tvRemainingTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--:--"
+                    android:textColor="@color/text_primary"
+                    android:textSize="42sp"
+                    android:textStyle="bold"
+                    android:fontFamily="monospace"
+                    android:letterSpacing="-0.03" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Strict blocker active • App closes immediately"
+                    android:textColor="@color/text_muted"
+                    android:textSize="12sp"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Action CTA Buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center"
-        android:background="@color/bg_card"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="20dp"
-        android:layout_marginBottom="40dp">
+        android:layout_marginTop="8dp">
 
-        <TextView
-            android:id="@+id/tvRemainingTime"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="--:--"
-            android:textColor="@color/text_primary"
-            android:textSize="36sp"
+        <!-- Primary Action: Return to Refocus -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnBackToFocus"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:backgroundTint="@null"
+            android:background="@drawable/bg_brutal_button_primary"
+            android:text="← RETURN TO REFOCUS"
+            android:textColor="@color/button_text"
+            android:textSize="14sp"
             android:textStyle="bold"
-            android:fontFamily="monospace"
-            android:letterSpacing="-0.02" />
+            android:letterSpacing="0.05"
+            android:stateListAnimator="@null"
+            android:layout_marginBottom="8dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Time remaining"
-            android:textColor="@color/text_muted"
-            android:textSize="12sp"
-            android:layout_marginTop="6dp" />
+        <!-- Secondary Action: Return to Home Launcher -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnExitToHome"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:backgroundTint="@null"
+            android:background="@drawable/bg_brutal_button_secondary"
+            android:text="EXIT TO PHONE HOME SCREEN"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.04"
+            android:stateListAnimator="@null" />
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-    <!-- Back to Focus CTA -->
-    <Button
-        android:id="@+id/btnBackToFocus"
-        android:layout_width="match_parent"
-        android:layout_height="54dp"
-        android:text="← Back to Focus"
-        android:textAllCaps="false"
-        android:textSize="15sp"
-        android:textStyle="bold"
-        android:textColor="@color/button_text"
-        android:backgroundTint="@color/accent_violet" />
 
 </LinearLayout>

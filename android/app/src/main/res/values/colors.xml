@@ -1,16 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#08090E</color>
-    <color name="bg_dark">#08090E</color>
-    <color name="bg_card">#141724</color>
-    <color name="bg_card_elevated">#1B2032</color>
+    <color name="ic_launcher_background">#090A0F</color>
+
+    <!-- Neo-Brutalism Theme Core Colors -->
+    <color name="bg_obsidian">#090A0F</color>
+    <color name="bg_dark">#090A0F</color>
+    <color name="surface_container">#12151E</color>
+    <color name="bg_card">#12151E</color>
+    <color name="surface_container_high">#1A1F2C</color>
+    <color name="bg_card_elevated">#1A1F2C</color>
+    <color name="surface_container_lowest">#090A0F</color>
+    <color name="surface_pressed">#283044</color>
+
+    <!-- Accents -->
+    <color name="neon_mint">#00E699</color>
+    <color name="neon_mint_pressed">#00C782</color>
+    <color name="electric_cyan">#38BDF8</color>
+    <color name="coral_red">#F43F5E</color>
+    <color name="warm_amber">#FBBF24</color>
+    <color name="royal_indigo">#818CF8</color>
     <color name="accent_violet">#8B5CF6</color>
     <color name="accent_purple">#8B5CF6</color>
-    <color name="accent_lavender">#C4B5FD</color>
-    <color name="accent_teal">#8B5CF6</color>
+    <color name="accent_lavender">#DDD6FE</color>
     <color name="accent_cyan">#38BDF8</color>
+
+    <!-- Neo-Brutalism Solid Borders & Hard Shadows -->
+    <color name="brutal_border">#2E384D</color>
+    <color name="brutal_border_dark">#000000</color>
+    <color name="brutal_border_high">#3B4863</color>
+    <color name="brutal_shadow">#000000</color>
+
+    <!-- High Contrast Typography -->
     <color name="text_primary">#F8FAFC</color>
     <color name="text_secondary">#94A3B8</color>
     <color name="text_muted">#64748B</color>
-    <color name="button_text">#FFFFFF</color>
+    <color name="text_dark">#090A0F</color>
+    <color name="button_text">#090A0F</color>
 </resources>
